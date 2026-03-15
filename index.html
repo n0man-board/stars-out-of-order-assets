@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>群星失序 Stars Out of Order - GM助手</title>
+    <title>群星失序 Stars Out of Order</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,97 +14,119 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        body { 
-            margin: 0; 
-            background: #000; 
-            font-family: sans-serif; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            width: 100vw;
+        :root {
+            /* 定義一個基準單位，隨螢幕縮放 */
+            --unit: 1vmin;
         }
 
-        /* 核心修正：自動縮放容器，確保 16:9 永遠不超出螢幕 */
+        body { 
+					   
+							  
+            margin: 0; background: #000; font-family: sans-serif; 
+            overflow: hidden; display: flex; justify-content: center; align-items: center; 
+						   
+									 
+								 
+            height: 100vh; width: 100vw;
+						 
+        }
+
+																				   
         .landscape-app { 
             position: relative; 
-            /* 根據螢幕寬高自動取最小值，確保不溢出 */
-            width: 100vw; 
-            height: 56.25vw; /* 9 / 16 = 0.5625 */
-            max-height: 100vh; 
-            max-width: 177.78vh; /* 16 / 9 = 1.7778 */
-            
-            background: #000; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+																		
+						  
+            width: 100vw; height: 56.25vw; 
+							   
+            max-height: 100vh; max-width: 177.78vh; 
+			
+            background: #000; overflow: hidden;
+            /* 讓內部的文字基準點變小 */
+            font-size: calc(var(--unit) * 2); 
+									 
+								
+												 
         }
 
-        /* 當手機直放時，顯示轉向提醒 */
+													 
         @media screen and (orientation: portrait) {
             body::after {
                 content: "請將手機橫放以獲得最佳體驗 💫";
                 position: fixed; inset: 0; background: #000; color: #fff;
                 z-index: 10000; display: flex; justify-content: center;
-                align-items: center; font-size: 1.5rem; text-align: center;
-                padding: 20px;
+                align-items: center; font-size: 5vmin; text-align: center; padding: 20px;
+							  
             }
         }
 
         .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 1.2s ease; }
         
-        .top-nav { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; z-index: 5000; background: rgba(0,0,0,0.7); padding: 8px 22px; border-radius: 30px; border: 1px solid #fff; pointer-events: auto; }
-        .nav-label { color: #fff; font-weight: bold; font-size: 14px; white-space: nowrap; }
-        .btn-circle { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #fff; background: none; color: #fff; cursor: pointer; font-weight: bold; }
+        /* 導覽列縮小 */
+        .top-nav { 
+            position: absolute; top: 2vmin; left: 50%; transform: translateX(-50%); 
+            display: flex; align-items: center; gap: 1.5vmin; z-index: 5000; 
+            background: rgba(0,0,0,0.7); padding: 1vmin 3vmin; border-radius: 5vmin; 
+            border: 0.2vmin solid #fff; 
+        }
+        .nav-label { color: #fff; font-weight: bold; font-size: 1.8vmin; white-space: nowrap; }
+        .btn-circle { 
+            width: 4.5vmin; height: 4.5vmin; border-radius: 50%; border: 0.15vmin solid #fff; 
+            background: none; color: #fff; cursor: pointer; font-weight: bold; font-size: 1.6vmin;
+        }
         .btn-circle.active { background: #fff; color: #000; }
 
-        .role-display { position: absolute; top: 75px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 400; }
-        .role-icon { width: 75px; height: 75px; object-fit: cover; border: 1px solid #fff; border-radius: 8px; }
+        /* 角色圖標縮小 */
+        .role-display { position: absolute; top: 12vmin; left: 50%; transform: translateX(-50%); display: flex; gap: 1.2vmin; z-index: 400; }
+        .role-icon { width: 9vmin; height: 9vmin; border-radius: 1vmin; border: 0.15vmin solid #fff; }
 
-        @keyframes breathingUI { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-        .center-btn-box { position: absolute; left: 50%; transform: translate(-50%, -50%); width: 45%; z-index: 100; pointer-events: none; display: flex; flex-direction: column; align-items: center; transition: top 0.3s ease; animation: breathingUI 3s infinite ease-in-out; }
+																				 
+        .center-btn-box { position: absolute; left: 50%; transform: translate(-50%, -50%); width: 45vmin; z-index: 100; pointer-events: none; }
         .center-img { width: 100%; height: auto; }
-        .center-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; z-index: 110; pointer-events: auto; cursor: pointer; }
+        .center-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; z-index: 110; pointer-events: auto; }
 
-        .lock-hint { color: #ff4d4d; font-weight: bold; font-size: 16px; text-shadow: 0 0 10px #000; margin-top: 5px; background: rgba(0,0,0,0.4); padding: 2px 15px; border-radius: 10px; }
+        .lock-hint { color: #ff4d4d; font-weight: bold; font-size: 2vmin; margin-top: 1vmin; }
 
-        .coord-slot { position: absolute; width: 6.4%; aspect-ratio: 1/1.4; transform: translate(-50%, -50%); z-index: 1000; cursor: pointer; pointer-events: auto; }
-        .card-wrap { position: relative; width: 100%; height: 100%; border-radius: 6px; pointer-events: none; }
+        /* 玩家點位大小優化 */
+        .coord-slot { position: absolute; width: 7.5vmin; aspect-ratio: 1/1.4; transform: translate(-50%, -50%); z-index: 1000; }
+																											   
         
-        .glow-red { box-shadow: 0 0 25px 10px rgba(255, 0, 0, 0.9) !important; }
-        .glow-blue { box-shadow: 0 0 25px 10px rgba(0, 100, 255, 0.9) !important; }
-        .glow-gold { box-shadow: 0 0 25px 10px rgba(255, 215, 0, 0.9) !important; }
-        .glow-teal { box-shadow: 0 0 25px 10px rgba(0, 255, 220, 0.9) !important; }
-        .glow-inspect { box-shadow: 0 0 35px 15px rgba(255, 240, 0, 1) !important; z-index: 1001; }
+        .counter-box { position: absolute; top: 3vmin; font-size: 4vmin; font-weight: 900; color: #fff; z-index: 600; }
+        .sun-counter { left: 5vmin; color: #f1c40f; }
+        .moon-counter { right: 5vmin; color: #9b59b6; }
+																				   
+																								   
 
-        .counter-box { position: absolute; top: 20px; font-size: 32px; font-weight: 900; color: #fff; z-index: 600; text-shadow: 0 0 10px #000; }
-        .sun-counter { left: 40px; color: #f1c40f; }
-        .moon-counter { right: 40px; color: #9b59b6; }
+        /* 任務卡片縮小 */
+        .mission-area { position: absolute; top: 2%; left: 50%; transform: translateX(-50%); z-index: 800; }
+        .mission-card { width: 9vmin; margin: 0 0.5vmin; }
+        .mission-legend { font-size: 1.4vmin; padding: 0.3vmin 1.5vmin; }
 
-        .mission-area { position: absolute; top: 2%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 800; pointer-events: auto; }
-        .mission-cards-row { display: flex; gap: 10px; }
-        .mission-card { width: 72px; cursor: pointer; }
+        /* 彈出選單縮小 */
+        .pop-menu { 
+            padding: 1.5vmin; border-radius: 1.5vmin; gap: 1vmin; min-width: 25vmin; 
+            border: 0.2vmin solid #fff; 
+        }
+		
+																												  
+        .pop-btn { padding: 1.2vmin 2vmin; font-size: 1.8vmin; border-radius: 1vmin; }
+
+        .info-status-bar { 
+            bottom: 12%; padding: 1vmin 4vmin; border-radius: 3vmin; 
+																																										 
+																		
+																 
+
+																																								 
+
+																																																										   
+																																																				 
+
+																										   
+            font-size: 2.2vmin; border: 0.15vmin solid rgba(255,255,255,0.2); 
+        }
         
-        .star-pool-glow { box-shadow: 0 0 15px 5px #d4af37, 0 0 20px 8px #8e44ad !important; border-radius: 5px; }
-        .mission-legend { color: #d4af37; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 2px 10px; border-radius: 10px; border: 1px solid #8e44ad; }
-
-        .pop-menu { position: absolute; background: #111; border: 2px solid #fff; padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 0 40px #000; min-width: 180px; z-index: 9999; max-height: 80vh; overflow-y: auto; }
-        .pop-btn { background: #333; color: #fff; border: 1px solid #666; padding: 10px 15px; cursor: pointer; font-size: 15px; border-radius: 8px; text-align: center; }
-        .pop-btn:hover:not(:disabled) { background: #fff; color: #000; }
-        .pop-btn:disabled { opacity: 0.15; cursor: not-allowed; }
-
-        .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: flex; justify-content: center; align-items: center; }
-
-        @keyframes breathingCard { 0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } }
-        .check-card-overlay { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); width: 105px; z-index: 3000; pointer-events: none; animation: breathingCard 2.5s infinite ease-in-out; }
-
-        .reset-area { position: absolute; bottom: 15px; right: 15px; z-index: 5000; pointer-events: auto; }
-        .btn-reset-main { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid #aaa; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; backdrop-filter: blur(5px); }
-        
-        .info-status-bar { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 8px 30px; border-radius: 20px; font-size: 18px; font-weight: bold; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); text-shadow: 0 0 10px #000; }
+        .check-card-overlay { width: 14vmin; top: 25%; }
+        .btn-reset-main { padding: 1vmin 2vmin; font-size: 1.6vmin; border-radius: 3vmin; }
     </style>
 </head>
 <body>
