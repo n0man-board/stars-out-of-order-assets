@@ -7,6 +7,7 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -16,32 +17,34 @@
         :root { --u: 1vmin; }
         body { margin: 0; background: #000; font-family: sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100dvh; width: 100vw; }
         
+        /* 16:9 置中容器，強制適配 100dvh */
         .landscape-app { 
             position: relative; width: 177.78vh; height: 100dvh; max-width: 100vw; max-height: 56.25vw;
             background: #000; overflow: hidden; 
         }
 
-        /* 啟動門：手機全螢幕必須透過此動作觸發 */
-        .start-overlay { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
-        .start-btn { padding: 3vmin 8vmin; border: 2px solid #d4af37; color: #d4af37; background: none; font-size: 4vmin; border-radius: 5vmin; letter-spacing: 5px; box-shadow: 0 0 20px rgba(212,175,55,0.3); }
+        /* 啟動門：為了獲取全螢幕與音訊播放權限 */
+        .splash-gate { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #d4af37; cursor: pointer; }
+        .gate-btn { padding: 3vmin 10vmin; border: 2px solid #d4af37; border-radius: 5vmin; font-size: 4vmin; letter-spacing: 10px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(212,175,55,0.4); } 70% { box-shadow: 0 0 0 30px rgba(212,175,55,0); } 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); } }
 
-        .loading-screen { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; }
-        .loader-bar { width: 300px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 20px; overflow: hidden; }
-        .loader-progress { height: 100%; background: #d4af37; transition: width 0.3s; }
+        /* 載入畫面 */
+        .loading-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; backdrop-filter: blur(10px); }
+        .loader-bar { width: 300px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 20px; overflow: hidden; }
+        .loader-progress { height: 100%; background: linear-gradient(90deg, #d4af37, #f1c40f); transition: width 0.3s; }
 
+        /* 影片樣式 */
         .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 1.5s ease; }
         .bg-video.active { opacity: 1; }
         
         @media screen and (orientation: portrait) {
-            body::after { content: "請橫放手機以獲得最佳體驗 💫"; position: fixed; inset: 0; background: #000; color: #fff; z-index: 10001; display: flex; justify-content: center; align-items: center; font-size: 4vmin; text-align: center; }
+            body::after { content: "請將手機橫放以獲得最佳體驗 💫"; position: fixed; inset: 0; background: #000; color: #fff; z-index: 10001; display: flex; justify-content: center; align-items: center; font-size: 4vmin; text-align: center; }
         }
 
-        /* 介面縮放 */
-        .top-nav { position: absolute; top: 2vmin; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1.5vmin; z-index: 5000; background: rgba(0,0,0,0.7); padding: 1vmin 3vmin; border-radius: 4vmin; border: 0.15vmin solid #fff; pointer-events: auto; }
-        .nav-label { color: #fff; font-weight: bold; font-size: 1.8vmin; white-space: nowrap; }
-        .btn-circle { width: 4.2vmin; height: 4.2vmin; border-radius: 50%; border: 0.15vmin solid #fff; background: none; color: #fff; font-size: 1.6vmin; font-weight: bold; cursor: pointer; }
+        /* UI 元件：繼承原本 px 但適配 vmin 縮放 */
+        .top-nav { position: absolute; top: 1.5vmin; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1.5vmin; z-index: 5000; background: rgba(0,0,0,0.7); padding: 1vmin 3vmin; border-radius: 4vmin; border: 0.15vmin solid #fff; pointer-events: auto; }
+        .btn-circle { width: 4vmin; height: 4vmin; border-radius: 50%; border: 0.15vmin solid #fff; background: none; color: #fff; font-size: 1.8vmin; font-weight: bold; cursor: pointer; }
         .btn-circle.active { background: #fff; color: #000; }
-
         .role-display { position: absolute; top: 11vmin; left: 50%; transform: translateX(-50%); display: flex; gap: 1.2vmin; z-index: 400; }
         .role-icon { width: 8vmin; height: 8vmin; object-fit: contain; border: 0.15vmin solid #fff; border-radius: 1vmin; }
 
@@ -49,34 +52,25 @@
         .center-btn-box { position: absolute; left: 50%; width: 45%; z-index: 100; pointer-events: none; display: flex; flex-direction: column; align-items: center; transition: top 0.4s ease; animation: breathingUI 3s infinite ease-in-out; transform: translate(-50%, -50%); }
         .center-img { width: 100%; height: auto; }
         .center-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; z-index: 110; pointer-events: auto; cursor: pointer; }
-        .lock-hint { color: #ff4d4d; font-weight: bold; font-size: 2vmin; margin-top: 1vmin; background: rgba(0,0,0,0.4); padding: 0.5vmin 2vmin; border-radius: 1vmin; }
 
         .coord-slot { position: absolute; width: 5.12%; aspect-ratio: 1/1.4; transform: translate(-50%, -50%); z-index: 1000; cursor: pointer; pointer-events: auto; }
         .card-wrap { position: relative; width: 100%; height: 100%; pointer-events: none; }
         
-        .glow-red { box-shadow: 0 0 2.5vmin 1vmin rgba(255, 0, 0, 0.9) !important; }
-        .glow-blue { box-shadow: 0 0 2.5vmin 1vmin rgba(0, 100, 255, 0.9) !important; }
-        .glow-gold { box-shadow: 0 0 2.5vmin 1vmin rgba(255, 215, 0, 0.9) !important; }
-        .glow-teal { box-shadow: 0 0 2.5vmin 1vmin rgba(0, 255, 220, 0.9) !important; }
-        .glow-inspect { box-shadow: 0 0 4vmin 1.8vmin rgba(255, 240, 0, 1) !important; z-index: 1001; }
-
         .counter-box { position: absolute; top: 3vmin; font-size: 4vmin; font-weight: 900; color: #fff; z-index: 600; text-shadow: 0 0 1vmin #000; }
         .sun-counter { left: 4vmin; color: #f1c40f; }
         .moon-counter { right: 4vmin; color: #9b59b6; }
 
         .mission-area { position: absolute; top: 2%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.5vmin; z-index: 800; width: 95%; }
         .mission-cards-row { display: flex; gap: 1vmin; justify-content: center; flex-wrap: wrap; }
-        .mission-card { width: 7vmin; cursor: pointer; object-fit: contain; }
+        .mission-card { width: 7.5vmin; cursor: pointer; object-fit: contain; }
         .star-pool-glow { box-shadow: 0 0 1.5vmin 0.5vmin #d4af37, 0 0 2vmin 0.8vmin #8e44ad !important; border-radius: 0.5vmin; }
 
-        .modal-overlay { position: absolute; inset: 0; z-index: 9999; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
-        .pop-menu { background: #111; border: 0.2vmin solid #fff; padding: 2.5vmin; border-radius: 2.5vmin; display: flex; flex-direction: column; gap: 1.5vmin; box-shadow: 0 0 5vmin #000; min-width: 25vmin; max-height: 85dvh; overflow-y: auto; }
+        .pop-menu { background: #111; border: 0.2vmin solid #fff; padding: 2.5vmin; border-radius: 2.5vmin; display: flex; flex-direction: column; gap: 1.5vmin; box-shadow: 0 0 5vmin #000; min-width: 25vmin; max-height: 85vh; overflow-y: auto; }
         .pop-btn { background: #333; color: #fff; border: 0.15vmin solid #666; padding: 1.5vmin 2vmin; cursor: pointer; font-size: 2vmin; border-radius: 1.5vmin; text-align: center; }
-        .pop-btn:disabled { opacity: 0.2; }
-
-        .info-status-bar { position: absolute; bottom: 12vmin; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 0.8vmin 4vmin; border-radius: 2.5vmin; font-size: 2.2vmin; font-weight: bold; border: 0.15vmin solid rgba(255,255,255,0.2); text-shadow: 0 0 1vmin #000; white-space: nowrap; }
+        .info-status-bar { position: absolute; bottom: 12vmin; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 0.8vmin 4vmin; border-radius: 2.5vmin; font-size: 2.2vmin; font-weight: bold; border: 0.15vmin solid rgba(255,255,255,0.2); white-space: nowrap; }
         .reset-area { position: absolute; bottom: 2vmin; right: 2vmin; z-index: 5000; }
         .btn-reset-main { background: rgba(255,255,255,0.15); color: #fff; border: 0.15vmin solid #aaa; padding: 1vmin 2vmin; border-radius: 3vmin; cursor: pointer; font-size: 1.8vmin; backdrop-filter: blur(5px); }
+        .version-tag { position: absolute; bottom: 2vmin; left: 2vmin; color: rgba(255,255,255,0.2); font-size: 1.5vmin; pointer-events: none; }
         .check-card-overlay { position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); width: 13vmin; z-index: 3000; animation: breathingCard 2.5s infinite ease-in-out; }
         @keyframes breathingCard { 0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
     </style>
@@ -88,7 +82,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const BASE_URL = "https://raw.githubusercontent.com/n0man-board/stars-out-of-order-assets/main/images/";
 
-        // 完整座標數據 (100% 原始)
+        // 座標數據庫 (100% 原始不變)
         const PLAYER_POSITIONS = {
           "13": [{left:21.4,top:77.9},{left:10.3,top:70.0},{left:5.7,top:60.2},{left:8.2,top:50.2},{left:17.7,top:41.6},{left:32.4,top:35.8},{left:50.0,top:33.8},{left:67.6,top:35.8},{left:82.3,top:41.6},{left:91.8,top:50.2},{left:94.3,top:60.2},{left:89.7,top:70.0},{left:78.6,top:77.9}],
           "12": [{left:21.4,top:77.9},{left:13.6,top:73.1},{left:6.6,top:53.6},{left:15.4,top:43.0},{left:29.1,top:36.7},{left:42.3,top:34.1},{left:57.7,top:34.1},{left:72.2,top:36.7},{left:84.6,top:43.0},{left:93.4,top:53.6},{left:90.3,top:69.3},{left:78.6,top:77.9}],
@@ -142,7 +136,14 @@
           // 核心資源預載
           useEffect(() => {
             if (!hasInteracted) return;
-            const assets = ["star.png", "card_0.png", "card_1.png", "card_2.png", "card_3.png", "set_1.png", "set_11.png", ...ROLE_POOL_MAP["13"].map(r=>`${r}.png`)];
+            const assets = [
+                "star.png", "card_0.png", "card_1.png", "card_2.png", "card_3.png",
+                "set_1.png", "set_11.png", "set_7_1.png", "set_7_2.png",
+                ...ROLE_POOL_MAP["13"].map(r=>`${r}.png`),
+                ...ROLE_POOL_MAP["13"].map(r=>`${r}_D.png`),
+                ...Array.from({length:13}, (_,i)=>`idx_${String(i+1).padStart(2,'0')}.png`),
+                ...Array.from({length:13}, (_,i)=>`s${String(i+1).padStart(2,'0')}.png`)
+            ];
             let loaded = 0;
             assets.forEach(src => {
                 const img = new Image(); img.src = `${BASE_URL}${src}`;
@@ -151,7 +152,7 @@
             });
           }, [hasInteracted]);
 
-          const handleStart = () => {
+          const handleRitualStart = () => {
             const el = document.documentElement;
             if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
             else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
@@ -178,7 +179,7 @@
               });
           }, [activeVidKey, loading, hasInteracted]);
 
-          // 所有核心邏輯函式 (100% 原始)
+          // --- 遊戲邏輯與原始代碼一致 ---
           const initGame = (n) => {
             setPlayerCount(n);
             setPlayers(Array.from({ length: n }, (_, i) => ({ id: i + 1, side: 'sun', role: null, isInfected: false, isGlow: false, status: 'idx' })));
@@ -186,11 +187,10 @@
           const fullReset = () => { setStep(1); setPlayerCount(null); setPlayers([]); setRound(1); setSunScore(0); setMoonScore(0); setShowReset(false); };
           const checkVictoryResult = () => {
             if (!playerCount) return "CONTINUE";
-            const fullPool = ROLE_POOL_MAP[playerCount];
-            const confirmedRevealed = players.map(p => p.role).filter(r => r !== null);
-            const hiddenPool = fullPool.filter(r => !confirmedRevealed.includes(r));
-            const aliveRoles = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hiddenPool];
-            if (!aliveRoles.some(r => FACTIONS.sun_gods.includes(r)) || !aliveRoles.some(r => FACTIONS.mortals.includes(r))) return "MOON_WIN";
+            const confirmed = players.map(p => p.role).filter(r => r !== null);
+            const hidden = ROLE_POOL_MAP[playerCount].filter(r => !confirmed.includes(r));
+            const alive = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hidden];
+            if (!alive.some(r => FACTIONS.sun_gods.includes(r)) || !alive.some(r => FACTIONS.mortals.includes(r))) return "MOON_WIN";
             if (sunScore >= SUN_GOALS[playerCount]) return "SUN_WIN";
             return "CONTINUE";
           };
@@ -201,7 +201,7 @@
               return { ok: moons === MOON_TARGETS[playerCount], hint: moons !== MOON_TARGETS[playerCount] ? `需設置 ${MOON_TARGETS[playerCount]} 位月方` : "" };
             }
             if (step === 4) {
-              if (!players.some(p => p.role === 'zeus') || !players.some(p => p.role === 'hades') || !players.some(p => p.role === 'prophet')) return { ok: false, hint: "需完成核心身分設置" };
+              if (!players.some(p => p.role === 'zeus') || !players.some(p => p.role === 'hades') || !players.some(p => p.role === 'prophet')) return { ok: false, hint: "核心身分未就緒" };
             }
             return { ok: true };
           }, [step, players, playerCount]);
@@ -245,26 +245,29 @@
           const activePlayer = players.find(p => p.id === activeMenuId);
           const inspectTarget = players.find(p => p.id === inspectingId);
 
-          // 1. 啟動層
+          // 1. 啟動門頁面
           if (!hasInteracted) return (
-            <div className="start-overlay" onClick={handleStart}>
+            <div className="splash-gate" onClick={handleRitualStart}>
                 <video autoPlay loop muted playsInline style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.3}}>
                     <source src={`${BASE_URL}bg_video1.mp4`} type="video/mp4" />
                 </video>
-                <div className="start-btn">啟動群星儀式</div>
+                <div className="gate-btn">啟動群星儀式</div>
+                <p style={{marginTop:'2vmin', opacity:0.6, fontSize:'1.5vmin'}}>點擊進入全螢幕體驗</p>
             </div>
           );
 
-          // 2. 載入層
+          // 2. 載入畫面
           if (loading) return (
             <div className="loading-screen">
-                <video autoPlay loop muted playsInline className="loading-bg-video"><source src={`${BASE_URL}bg_video1.mp4`} type="video/mp4" /></video>
+                <video autoPlay loop muted playsInline className="bg-video active" style={{opacity: 0.4}}>
+                    <source src={`${BASE_URL}bg_video1.mp4`} type="video/mp4" />
+                </video>
                 <h2 style={{color:'#d4af37', letterSpacing:'4px', zIndex:1}}>同步星際通訊... {loadProgress}%</h2>
                 <div className="loader-bar" style={{zIndex:1}}><div className="loader-progress" style={{width:`${loadProgress}%`}}/></div>
             </div>
           );
 
-          // 3. 正式遊戲層
+          // 3. 遊戲主畫面
           return (
             <div className="landscape-app" onClick={() => { setActiveMenuId(null); setInspectingId(null); }}>
               {["bg_video1.mp4", "bg_video2.mp4", "bg_video3.mp4", "bg_video4.mp4", "bg_video5.mp4", "bg_video6.mp4"].map((v, i) => (
@@ -273,7 +276,7 @@
 
               {step === 1 && (
                 <div className="top-nav" onClick={e => e.stopPropagation()}>
-                    <div className="nav-label">選擇人數：</div>
+                    <div style={{color:'#fff', fontSize:'1.8vmin'}}>選擇人數：</div>
                     {[5,6,7,8,9,10,11,12,13].map(n => ( <button key={n} className={`btn-circle ${playerCount === n ? 'active' : ''}`} onClick={() => initGame(n)}>{n}</button> ))}
                 </div>
               )}
@@ -282,7 +285,7 @@
                 <div className="role-display">{ROLE_POOL_MAP[playerCount].map(r => ( <img key={r} src={`${BASE_URL}${r}.png`} className="role-icon" /> ))}</div>
               )}
 
-              <div className="center-btn-box" style={{ top: step === 1 ? '52%' : 'calc(52% + 2.5vmin)' }}>
+              <div className="center-btn-box" style={{ top: step === 1 ? '52%' : 'calc(52% + 2vmin)' }}>
                 <img src={`${BASE_URL}${(step===1? (playerCount?"set_1.png":"star.png") : (step===8?(sunScore>=3?"set_7_2.png":"set_7_1.png"):(step===13?"set_11.png":`set_${step-1}.png`)))}`} className="center-img" />
                 <div className="center-trigger" onClick={(e) => { e.stopPropagation(); onCenterClick(); }} />
                 {!validation.ok && step > 1 && <div className="lock-hint">{validation.hint}</div>}
@@ -300,7 +303,7 @@
                 );
               })}
 
-              {(step === 7 || step === 8) && ( <div className="info-status-bar"> 第 {round} 輪 | 目標：{SUN_GOALS[playerCount]} | 達成率：{Math.round((sunScore / SUN_GOALS[playerCount]) * 100)}% </div> )}
+              {(step === 7 || step === 8) && ( <div className="info-status-bar"> 第 {round} 輪任務 | 目標：{SUN_GOALS[playerCount]} | 達成率：{Math.round((sunScore / SUN_GOALS[playerCount]) * 100)}% </div> )}
               {(step === 7 || step === 8 || step >= 13) && ( <><div className="counter-box sun-counter">日: {sunScore}</div><div className="counter-box moon-counter">月: {moonScore}</div></> )}
 
               {step === 7 && (
@@ -317,7 +320,8 @@
               {inspectTarget && ( <img src={`${BASE_URL}${inspectTarget.isInfected ? 'card_2.png' : (['zeus','hades','prophet'].includes(inspectTarget.role) ? 'card_0.png' : (inspectTarget.side === 'moon' ? 'card_2.png' : 'card_1.png'))}`} className="check-card-overlay" /> )}
 
               <div className="reset-area"><button className="btn-reset-main" onClick={(e) => { e.stopPropagation(); setShowReset(true); }}>重新開始</button></div>
-              
+              <div className="version-tag">APP v1.0</div>
+
               {showReset && (
                 <div className="modal-overlay" onClick={() => setShowReset(false)}><div className="pop-menu" onClick={e => e.stopPropagation()}><button className="pop-btn" onClick={fullReset}>回到設定頁</button><button className="pop-btn" style={{background:'#555'}} onClick={() => setShowReset(false)}>取消</button></div></div>
               )}
@@ -325,10 +329,10 @@
               {activePlayer && (
                 <div className="modal-overlay" onClick={() => setActiveMenuId(null)}>
                   <div className="pop-menu" onClick={e => e.stopPropagation()}>
-                    <div style={{color:'#fff', textAlign:'center', marginBottom:'1.5vmin', fontWeight:'bold', fontSize:'2.2vmin'}}>玩家 #{activePlayer.id} 設置</div>
+                    <div style={{color:'#fff', textAlign:'center', marginBottom:'1vmin', fontWeight:'bold', fontSize:'2.2vmin'}}>玩家 #{activePlayer.id} 設置</div>
                     {step === 3 && ( <><button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, side:'sun'}:x)); setActiveMenuId(null); }}>設置 日方</button><button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, side:'moon'}:x)); setActiveMenuId(null); }}>設置 月方</button></> )}
                     {step === 4 && ( <>{["hades", "zeus", "prophet"].map(r => <button key={r} className="pop-btn" disabled={!getFilteredRoles().includes(r)} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r}:x)); setActiveMenuId(null); }}>{r === 'hades' ? '黑帝斯' : r === 'zeus' ? '宙斯' : '先知'}</button>)}<button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:null}:x)); setActiveMenuId(null); }}>取消</button></> )}
-                    {(step === 8 || step === 13) && ( <><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1vmin'}}>{getFilteredRoles().map(r => ( <React.Fragment key={r}><button className="pop-btn" style={{fontSize:'1.8vmin'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r, status:'returned'}:x)); setActiveMenuId(null); }}>{r}(歸)</button><button className="pop-btn" style={{fontSize:'1.8vmin'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r, status:'revealed'}:x)); setActiveMenuId(null); }}>{r}(現)</button></React.Fragment> ))}</div><button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:null, status:'idx'}:x)); setActiveMenuId(null); }}>清空</button></> )}
+                    {(step === 8 || step === 13) && ( <><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1vmin'}}>{getFilteredRoles().map(r => ( <React.Fragment key={r}><button className="pop-btn" style={{fontSize:'1.8vmin'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r, status:'returned'}:x)); setActiveMenuId(null); }}>{r}(歸)</button><button className="pop-btn" style={{fontSize:'1.8vmin'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r, status:'revealed'}:x)); setActiveMenuId(null); }}>{r}(現)</button></React.Fragment> ))}</div><button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...p, role:null, status:'idx'}:p)); setActiveMenuId(null); }}>清空</button></> )}
                     {step === 10 && <button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, isGlow:!x.isGlow}:x)); setActiveMenuId(null); }}>擊殺/取消</button>}
                     {step === 11 && ( <><button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:'pandora'}:x)); setActiveMenuId(null); }}>潘朵拉</button><button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, isInfected:true}:x)); setActiveMenuId(null); }}>設置 眷屬</button><button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, isInfected:false}:x)); setActiveMenuId(null); }}>取消</button></> )}
                     <button className="pop-btn" style={{background:'#555'}} onClick={() => setActiveMenuId(null)}>關閉</button>
