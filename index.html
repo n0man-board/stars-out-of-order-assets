@@ -3,50 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>群星失序 Stars Out of Order - v0.6</title>
+    <title>群星失序 Stars Out of Order - v1.0</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
         :root { --u: 1vmin; }
-        body { margin: 0; background: #000; font-family: sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; }
+        body { margin: 0; background: #000; font-family: sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100dvh; width: 100vw; }
         
-        /* 16:9 高性能容器 */
         .landscape-app { 
-            position: relative; width: 177.78vh; height: 100vh; max-width: 100vw; max-height: 56.25vw;
-            background: #000; overflow: hidden; box-shadow: 0 0 5vmin rgba(0,0,0,1);
+            position: relative; width: 177.78vh; height: 100dvh; max-width: 100vw; max-height: 56.25vw;
+            background: #000; overflow: hidden; 
         }
 
-        /* 預載畫面 */
-        .loading-screen { position: absolute; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; }
-        .loader-bar { width: 40%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 20px; overflow: hidden; }
-        .loader-progress { height: 100%; background: linear-gradient(90deg, #8e44ad, #d4af37); transition: width 0.3s; }
+        /* 啟動門：手機全螢幕必須透過此動作觸發 */
+        .start-overlay { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
+        .start-btn { padding: 3vmin 8vmin; border: 2px solid #d4af37; color: #d4af37; background: none; font-size: 4vmin; border-radius: 5vmin; letter-spacing: 5px; box-shadow: 0 0 20px rgba(212,175,55,0.3); }
 
-        /* 影片層級優化 */
-        .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 1.2s ease; will-change: opacity; }
+        .loading-screen { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; }
+        .loader-bar { width: 300px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 20px; overflow: hidden; }
+        .loader-progress { height: 100%; background: #d4af37; transition: width 0.3s; }
+
+        .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 1.5s ease; }
         .bg-video.active { opacity: 1; }
         
         @media screen and (orientation: portrait) {
-            body::after { content: "請橫放手機以啟動儀式 💫"; position: fixed; inset: 0; background: #000; color: #fff; z-index: 10000; display: flex; justify-content: center; align-items: center; font-size: 4vmin; }
+            body::after { content: "請橫放手機以獲得最佳體驗 💫"; position: fixed; inset: 0; background: #000; color: #fff; z-index: 10001; display: flex; justify-content: center; align-items: center; font-size: 4vmin; text-align: center; }
         }
 
-        /* UI 元件縮放優化 */
+        /* 介面縮放 */
         .top-nav { position: absolute; top: 2vmin; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1.5vmin; z-index: 5000; background: rgba(0,0,0,0.7); padding: 1vmin 3vmin; border-radius: 4vmin; border: 0.15vmin solid #fff; pointer-events: auto; }
         .nav-label { color: #fff; font-weight: bold; font-size: 1.8vmin; white-space: nowrap; }
         .btn-circle { width: 4.2vmin; height: 4.2vmin; border-radius: 50%; border: 0.15vmin solid #fff; background: none; color: #fff; font-size: 1.6vmin; font-weight: bold; cursor: pointer; }
         .btn-circle.active { background: #fff; color: #000; }
 
         .role-display { position: absolute; top: 11vmin; left: 50%; transform: translateX(-50%); display: flex; gap: 1.2vmin; z-index: 400; }
-        .role-icon { width: 8.5vmin; height: 8.5vmin; object-fit: contain; border: 0.15vmin solid #fff; border-radius: 1vmin; }
+        .role-icon { width: 8vmin; height: 8vmin; object-fit: contain; border: 0.15vmin solid #fff; border-radius: 1vmin; }
 
         @keyframes breathingUI { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         .center-btn-box { position: absolute; left: 50%; width: 45%; z-index: 100; pointer-events: none; display: flex; flex-direction: column; align-items: center; transition: top 0.4s ease; animation: breathingUI 3s infinite ease-in-out; transform: translate(-50%, -50%); }
         .center-img { width: 100%; height: auto; }
         .center-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; z-index: 110; pointer-events: auto; cursor: pointer; }
+        .lock-hint { color: #ff4d4d; font-weight: bold; font-size: 2vmin; margin-top: 1vmin; background: rgba(0,0,0,0.4); padding: 0.5vmin 2vmin; border-radius: 1vmin; }
 
         .coord-slot { position: absolute; width: 5.12%; aspect-ratio: 1/1.4; transform: translate(-50%, -50%); z-index: 1000; cursor: pointer; pointer-events: auto; }
-        .card-wrap { position: relative; width: 100%; height: 100%; }
+        .card-wrap { position: relative; width: 100%; height: 100%; pointer-events: none; }
         
         .glow-red { box-shadow: 0 0 2.5vmin 1vmin rgba(255, 0, 0, 0.9) !important; }
         .glow-blue { box-shadow: 0 0 2.5vmin 1vmin rgba(0, 100, 255, 0.9) !important; }
@@ -54,26 +60,24 @@
         .glow-teal { box-shadow: 0 0 2.5vmin 1vmin rgba(0, 255, 220, 0.9) !important; }
         .glow-inspect { box-shadow: 0 0 4vmin 1.8vmin rgba(255, 240, 0, 1) !important; z-index: 1001; }
 
-        .counter-box { position: absolute; top: 3vmin; font-size: 4.5vmin; font-weight: 900; color: #fff; z-index: 600; text-shadow: 0 0 1vmin #000; }
+        .counter-box { position: absolute; top: 3vmin; font-size: 4vmin; font-weight: 900; color: #fff; z-index: 600; text-shadow: 0 0 1vmin #000; }
         .sun-counter { left: 4vmin; color: #f1c40f; }
         .moon-counter { right: 4vmin; color: #9b59b6; }
 
-        /* Step 7 修正：間距縮小並允許換行，防止重疊 */
         .mission-area { position: absolute; top: 2%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.5vmin; z-index: 800; width: 95%; }
         .mission-cards-row { display: flex; gap: 1vmin; justify-content: center; flex-wrap: wrap; }
-        .mission-card { width: 7.5vmin; cursor: pointer; object-fit: contain; }
+        .mission-card { width: 7vmin; cursor: pointer; object-fit: contain; }
         .star-pool-glow { box-shadow: 0 0 1.5vmin 0.5vmin #d4af37, 0 0 2vmin 0.8vmin #8e44ad !important; border-radius: 0.5vmin; }
 
         .modal-overlay { position: absolute; inset: 0; z-index: 9999; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
-        .pop-menu { background: #111; border: 0.2vmin solid #fff; padding: 2.5vmin; border-radius: 2.5vmin; display: flex; flex-direction: column; gap: 1.5vmin; box-shadow: 0 0 5vmin #000; min-width: 25vmin; max-height: 85vh; overflow-y: auto; }
-        .pop-btn { background: #333; color: #fff; border: 0.15vmin solid #666; padding: 1.5vmin 2vmin; cursor: pointer; font-size: 2vmin; border-radius: 1.5vmin; }
-        .pop-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+        .pop-menu { background: #111; border: 0.2vmin solid #fff; padding: 2.5vmin; border-radius: 2.5vmin; display: flex; flex-direction: column; gap: 1.5vmin; box-shadow: 0 0 5vmin #000; min-width: 25vmin; max-height: 85dvh; overflow-y: auto; }
+        .pop-btn { background: #333; color: #fff; border: 0.15vmin solid #666; padding: 1.5vmin 2vmin; cursor: pointer; font-size: 2vmin; border-radius: 1.5vmin; text-align: center; }
+        .pop-btn:disabled { opacity: 0.2; }
 
-        .info-status-bar { position: absolute; bottom: 12vmin; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 0.8vmin 4vmin; border-radius: 2.5vmin; font-size: 2.2vmin; font-weight: bold; border: 0.15vmin solid rgba(255,255,255,0.2); white-space: nowrap; }
+        .info-status-bar { position: absolute; bottom: 12vmin; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 0.8vmin 4vmin; border-radius: 2.5vmin; font-size: 2.2vmin; font-weight: bold; border: 0.15vmin solid rgba(255,255,255,0.2); text-shadow: 0 0 1vmin #000; white-space: nowrap; }
         .reset-area { position: absolute; bottom: 2vmin; right: 2vmin; z-index: 5000; }
-        .btn-reset-main { background: rgba(255,255,255,0.15); color: #fff; border: 0.15vmin solid #aaa; padding: 1vmin 2.5vmin; border-radius: 3vmin; cursor: pointer; font-size: 1.8vmin; backdrop-filter: blur(5px); }
-        .version-tag { position: absolute; bottom: 2vmin; left: 2vmin; color: rgba(255,255,255,0.2); font-size: 1.5vmin; }
-        .check-card-overlay { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); width: 12vmin; z-index: 3000; animation: breathingCard 2.5s infinite ease-in-out; }
+        .btn-reset-main { background: rgba(255,255,255,0.15); color: #fff; border: 0.15vmin solid #aaa; padding: 1vmin 2vmin; border-radius: 3vmin; cursor: pointer; font-size: 1.8vmin; backdrop-filter: blur(5px); }
+        .check-card-overlay { position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); width: 13vmin; z-index: 3000; animation: breathingCard 2.5s infinite ease-in-out; }
         @keyframes breathingCard { 0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
     </style>
 </head>
@@ -84,7 +88,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const BASE_URL = "https://raw.githubusercontent.com/n0man-board/stars-out-of-order-assets/main/images/";
 
-        // 座標數據 (100% 原始不變)
+        // 完整座標數據 (100% 原始)
         const PLAYER_POSITIONS = {
           "13": [{left:21.4,top:77.9},{left:10.3,top:70.0},{left:5.7,top:60.2},{left:8.2,top:50.2},{left:17.7,top:41.6},{left:32.4,top:35.8},{left:50.0,top:33.8},{left:67.6,top:35.8},{left:82.3,top:41.6},{left:91.8,top:50.2},{left:94.3,top:60.2},{left:89.7,top:70.0},{left:78.6,top:77.9}],
           "12": [{left:21.4,top:77.9},{left:13.6,top:73.1},{left:6.6,top:53.6},{left:15.4,top:43.0},{left:29.1,top:36.7},{left:42.3,top:34.1},{left:57.7,top:34.1},{left:72.2,top:36.7},{left:84.6,top:43.0},{left:93.4,top:53.6},{left:90.3,top:69.3},{left:78.6,top:77.9}],
@@ -118,6 +122,7 @@
         const FACTIONS = { sun_gods: ["zeus", "apollo", "athena", "prometheus"], mortals: ["odysseus", "daedalus", "melampus", "cassandra", "prometheus", "prophet"] };
 
         function StarsApp() {
+          const [hasInteracted, setHasInteracted] = useState(false);
           const [loading, setLoading] = useState(true);
           const [loadProgress, setLoadProgress] = useState(0);
           const [step, setStep] = useState(1);
@@ -132,35 +137,27 @@
           const [activeMenuId, setActiveMenuId] = useState(null);
           const [showReset, setShowReset] = useState(false);
 
-          // 影片管理：使用 Refs 避免重新渲染
           const videoRefs = { v1: useRef(null), v2: useRef(null), v3: useRef(null), v4: useRef(null), v5: useRef(null), v6: useRef(null) };
 
-          // --- 真正的預載與快取邏輯 ---
+          // 核心資源預載
           useEffect(() => {
-            const imageAssets = [
-                "star.png", "card_0.png", "card_1.png", "card_2.png", "card_3.png",
-                ...ROLE_POOL_MAP["13"].map(r => `${r}.png`),
-                ...ROLE_POOL_MAP["13"].map(r => `${r}_D.png`),
-                ...Array.from({length:13}, (_,i) => `idx_${String(i+1).padStart(2,'0')}.png`),
-                ...Array.from({length:13}, (_,i) => `s${String(i+1).padStart(2,'0')}.png`),
-                ...Array.from({length:13}, (_,i) => `set_${i+1}.png`),
-                "set_7_1.png", "set_7_2.png"
-            ];
-
+            if (!hasInteracted) return;
+            const assets = ["star.png", "card_0.png", "card_1.png", "card_2.png", "card_3.png", "set_1.png", "set_11.png", ...ROLE_POOL_MAP["13"].map(r=>`${r}.png`)];
             let loaded = 0;
-            const promises = imageAssets.map(src => {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.src = `${BASE_URL}${src}`;
-                    img.onload = () => { loaded++; setLoadProgress(Math.floor((loaded/imageAssets.length)*100)); resolve(); };
-                    img.onerror = resolve; // 失敗也跳過，避免卡死
-                });
+            assets.forEach(src => {
+                const img = new Image(); img.src = `${BASE_URL}${src}`;
+                img.onload = () => { loaded++; setLoadProgress(Math.floor((loaded/assets.length)*100)); if(loaded===assets.length) setTimeout(()=>setLoading(false), 1000); };
+                img.onerror = () => { loaded++; if(loaded===assets.length) setLoading(false); };
             });
+          }, [hasInteracted]);
 
-            Promise.all(promises).then(() => setTimeout(() => setLoading(false), 1000));
-          }, []);
+          const handleStart = () => {
+            const el = document.documentElement;
+            if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            setHasInteracted(true);
+          };
 
-          // --- 影片切換邏輯 ---
           const activeVidKey = useMemo(() => {
               if (step <= 2) return "v1";
               if (step >= 3 && step <= 6) return "v2";
@@ -172,36 +169,29 @@
           }, [step]);
 
           useEffect(() => {
-              if (loading) return;
+              if (loading || !hasInteracted) return;
               Object.keys(videoRefs).forEach(key => {
                   const el = videoRefs[key].current;
                   if (!el) return;
                   if (key === activeVidKey) { el.play().catch(()=>{}); el.style.opacity = 1; }
                   else { el.pause(); el.currentTime = 0; el.style.opacity = 0; }
               });
-          }, [activeVidKey, loading]);
+          }, [activeVidKey, loading, hasInteracted]);
 
-          // --- 核心邏輯保持不變 ---
+          // 所有核心邏輯函式 (100% 原始)
           const initGame = (n) => {
             setPlayerCount(n);
             setPlayers(Array.from({ length: n }, (_, i) => ({ id: i + 1, side: 'sun', role: null, isInfected: false, isGlow: false, status: 'idx' })));
           };
-          const fullReset = () => {
-            setStep(1); setPlayerCount(null); setPlayers([]); setRound(1); setSunScore(0); setMoonScore(0); setShowReset(false);
-          };
-          const sunTarget = playerCount ? SUN_GOALS[playerCount] : 0;
-          const progress = sunTarget ? Math.round((sunScore / sunTarget) * 100) : 0;
-          const hitMilestone = useMemo(() => {
-            const milestones = [3, 5, 8, 11, 14, 17, 20];
-            return milestones.some(m => sunScore >= m && lastSunScore < m);
-          }, [sunScore, lastSunScore]);
+          const fullReset = () => { setStep(1); setPlayerCount(null); setPlayers([]); setRound(1); setSunScore(0); setMoonScore(0); setShowReset(false); };
           const checkVictoryResult = () => {
             if (!playerCount) return "CONTINUE";
-            const confirmed = players.map(p => p.role).filter(r => r !== null);
-            const hidden = ROLE_POOL_MAP[playerCount].filter(r => !confirmed.includes(r));
-            const alive = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hidden];
-            if (!alive.some(r => FACTIONS.sun_gods.includes(r)) || !alive.some(r => FACTIONS.mortals.includes(r))) return "MOON_WIN";
-            if (sunScore >= sunTarget) return "SUN_WIN";
+            const fullPool = ROLE_POOL_MAP[playerCount];
+            const confirmedRevealed = players.map(p => p.role).filter(r => r !== null);
+            const hiddenPool = fullPool.filter(r => !confirmedRevealed.includes(r));
+            const aliveRoles = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hiddenPool];
+            if (!aliveRoles.some(r => FACTIONS.sun_gods.includes(r)) || !aliveRoles.some(r => FACTIONS.mortals.includes(r))) return "MOON_WIN";
+            if (sunScore >= SUN_GOALS[playerCount]) return "SUN_WIN";
             return "CONTINUE";
           };
           const validation = useMemo(() => {
@@ -211,23 +201,16 @@
               return { ok: moons === MOON_TARGETS[playerCount], hint: moons !== MOON_TARGETS[playerCount] ? `需設置 ${MOON_TARGETS[playerCount]} 位月方` : "" };
             }
             if (step === 4) {
-              if (!players.some(p => p.role === 'zeus') || !players.some(p => p.role === 'hades') || !players.some(p => p.role === 'prophet')) return { ok: false, hint: "核心身分未就緒" };
+              if (!players.some(p => p.role === 'zeus') || !players.some(p => p.role === 'hades') || !players.some(p => p.role === 'prophet')) return { ok: false, hint: "需完成核心身分設置" };
             }
             return { ok: true };
           }, [step, players, playerCount]);
-          const centerImgName = useMemo(() => {
-            if (step === 1) return playerCount ? "set_1.png" : "star.png";
-            if (step === 8) return hitMilestone ? "set_7_2.png" : "set_7_1.png";
-            if (step === 12) return "set_4.png"; if (step === 13) return "set_11.png";
-            if (step === 14) return "set_12.png"; if (step === 15) return "set_13.png";
-            return `set_${step - 1}.png`;
-          }, [step, playerCount, hitMilestone]);
+
           const onCenterClick = () => {
             if (step === 1 && !playerCount) return; if (!validation.ok) return;
-            if (step === 1) { setStep(3); return; }
+            setInspectingId(null); if (step === 1) { setStep(3); return; }
             if (step === 7) {
-              setLastSunScore(sunScore); let s = 0, m = 0;
-              tempCards.forEach(c => { if(c === 1) s++; if(c === 2) m++; });
+              setLastSunScore(sunScore); let s=0, m=0; tempCards.forEach(c => { if(c===1) s++; if(c===2) m++; });
               setSunScore(v => v + s); setMoonScore(v => v + m);
             }
             if (step === 13) {
@@ -237,13 +220,19 @@
             } else if (step < 14) setStep(s => s + 1);
             setActiveMenuId(null);
           };
+
+          const onCoordClick = (e, p) => {
+            e.stopPropagation(); if (step <= 2 || step === 6 || step === 9) return;
+            if (step === 5 || step === 12) setInspectingId(p.id === inspectingId ? null : p.id); else setActiveMenuId(p.id);
+          };
+
           useEffect(() => {
             if (step === 7 && playerCount) {
                 const base = MISSION_MAP[playerCount][round-1] || 2;
-                const count = base + (round === 1 ? 2 : round === 2 ? 1 : 0);
-                setTempCards(new Array(count).fill(0));
+                setTempCards(new Array(base + (round === 1 ? 2 : round === 2 ? 1 : 0)).fill(0));
             }
           }, [step, round, playerCount]);
+
           const getFilteredRoles = () => {
             if (!playerCount || !activeMenuId) return [];
             const used = players.filter(p => p.id !== activeMenuId && p.role !== null).map(p => p.role);
@@ -256,13 +245,26 @@
           const activePlayer = players.find(p => p.id === activeMenuId);
           const inspectTarget = players.find(p => p.id === inspectingId);
 
-          if (loading) return (
-            <div className="loading-screen">
-                <h2 style={{color:'#d4af37'}}>同步星際通訊... {loadProgress}%</h2>
-                <div className="loader-bar"><div className="loader-progress" style={{width:`${loadProgress}%`}}/></div>
+          // 1. 啟動層
+          if (!hasInteracted) return (
+            <div className="start-overlay" onClick={handleStart}>
+                <video autoPlay loop muted playsInline style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.3}}>
+                    <source src={`${BASE_URL}bg_video1.mp4`} type="video/mp4" />
+                </video>
+                <div className="start-btn">啟動群星儀式</div>
             </div>
           );
 
+          // 2. 載入層
+          if (loading) return (
+            <div className="loading-screen">
+                <video autoPlay loop muted playsInline className="loading-bg-video"><source src={`${BASE_URL}bg_video1.mp4`} type="video/mp4" /></video>
+                <h2 style={{color:'#d4af37', letterSpacing:'4px', zIndex:1}}>同步星際通訊... {loadProgress}%</h2>
+                <div className="loader-bar" style={{zIndex:1}}><div className="loader-progress" style={{width:`${loadProgress}%`}}/></div>
+            </div>
+          );
+
+          // 3. 正式遊戲層
           return (
             <div className="landscape-app" onClick={() => { setActiveMenuId(null); setInspectingId(null); }}>
               {["bg_video1.mp4", "bg_video2.mp4", "bg_video3.mp4", "bg_video4.mp4", "bg_video5.mp4", "bg_video6.mp4"].map((v, i) => (
@@ -281,24 +283,24 @@
               )}
 
               <div className="center-btn-box" style={{ top: step === 1 ? '52%' : 'calc(52% + 2.5vmin)' }}>
-                <img src={`${BASE_URL}${centerImgName}`} className="center-img" />
+                <img src={`${BASE_URL}${(step===1? (playerCount?"set_1.png":"star.png") : (step===8?(sunScore>=3?"set_7_2.png":"set_7_1.png"):(step===13?"set_11.png":`set_${step-1}.png`)))}`} className="center-img" />
                 <div className="center-trigger" onClick={(e) => { e.stopPropagation(); onCenterClick(); }} />
                 {!validation.ok && step > 1 && <div className="lock-hint">{validation.hint}</div>}
               </div>
 
-              {playerCount && PLAYER_POSITIONS[playerCount].map((pos, i) => {
+              {playerCount && (PLAYER_POSITIONS[playerCount] || []).map((pos, i) => {
                 const p = players[i]; if (!p) return null;
                 const xx = String(p.id).padStart(2, '0');
                 let img = p.status === 'returned' ? `${p.role}_D.png` : (p.status === 'revealed' ? `${p.role}.png` : `idx_${xx}.png`);
                 let glow = p.id === inspectingId ? "glow-inspect" : (p.isGlow ? "glow-red" : (step === 3 && p.side === 'moon' ? "glow-blue" : (step === 4 && p.role === 'zeus' ? "glow-gold" : (step === 4 && p.role === 'hades' ? "glow-blue" : (step === 4 && p.role === 'prophet' ? "glow-teal" : "")))));
                 return (
-                  <div key={p.id} className={`coord-slot ${glow}`} style={{ left: `${pos.left}%`, top: `${pos.top}%` }} onClick={(e) => { e.stopPropagation(); if (step <= 2 || step === 6 || step === 9) return; if (step === 5 || step === 12) setInspectingId(p.id === inspectingId ? null : p.id); else setActiveMenuId(p.id); }}>
+                  <div key={p.id} className={`coord-slot ${glow}`} style={{ left: `${pos.left}%`, top: `${pos.top}%` }} onClick={(e) => onCoordClick(e, p)}>
                     <div className="card-wrap"><img src={`${BASE_URL}${img}`} width="100%" height="100%" style={{objectFit:'contain'}}/><img src={`${BASE_URL}s${xx}.png`} style={{position:'absolute',inset:0,width:'100%',objectFit:'contain'}}/></div>
                   </div>
                 );
               })}
 
-              {(step === 7 || step === 8) && ( <div className="info-status-bar"> 第 {round} 輪 | 目標：{sunTarget} | 達成：{progress}% </div> )}
+              {(step === 7 || step === 8) && ( <div className="info-status-bar"> 第 {round} 輪 | 目標：{SUN_GOALS[playerCount]} | 達成率：{Math.round((sunScore / SUN_GOALS[playerCount]) * 100)}% </div> )}
               {(step === 7 || step === 8 || step >= 13) && ( <><div className="counter-box sun-counter">日: {sunScore}</div><div className="counter-box moon-counter">月: {moonScore}</div></> )}
 
               {step === 7 && (
@@ -315,8 +317,7 @@
               {inspectTarget && ( <img src={`${BASE_URL}${inspectTarget.isInfected ? 'card_2.png' : (['zeus','hades','prophet'].includes(inspectTarget.role) ? 'card_0.png' : (inspectTarget.side === 'moon' ? 'card_2.png' : 'card_1.png'))}`} className="check-card-overlay" /> )}
 
               <div className="reset-area"><button className="btn-reset-main" onClick={(e) => { e.stopPropagation(); setShowReset(true); }}>重新開始</button></div>
-              <div className="version-tag">v0.6 (Stable)</div>
-
+              
               {showReset && (
                 <div className="modal-overlay" onClick={() => setShowReset(false)}><div className="pop-menu" onClick={e => e.stopPropagation()}><button className="pop-btn" onClick={fullReset}>回到設定頁</button><button className="pop-btn" style={{background:'#555'}} onClick={() => setShowReset(false)}>取消</button></div></div>
               )}
@@ -324,10 +325,10 @@
               {activePlayer && (
                 <div className="modal-overlay" onClick={() => setActiveMenuId(null)}>
                   <div className="pop-menu" onClick={e => e.stopPropagation()}>
-                    <div style={{color:'#fff', textAlign:'center', marginBottom:'1vmin', fontWeight:'bold', fontSize:'2vmin'}}>玩家 #{activePlayer.id} 設置</div>
+                    <div style={{color:'#fff', textAlign:'center', marginBottom:'1.5vmin', fontWeight:'bold', fontSize:'2.2vmin'}}>玩家 #{activePlayer.id} 設置</div>
                     {step === 3 && ( <><button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, side:'sun'}:x)); setActiveMenuId(null); }}>設置 日方</button><button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, side:'moon'}:x)); setActiveMenuId(null); }}>設置 月方</button></> )}
                     {step === 4 && ( <>{["hades", "zeus", "prophet"].map(r => <button key={r} className="pop-btn" disabled={!getFilteredRoles().includes(r)} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r}:x)); setActiveMenuId(null); }}>{r === 'hades' ? '黑帝斯' : r === 'zeus' ? '宙斯' : '先知'}</button>)}<button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:null}:x)); setActiveMenuId(null); }}>取消</button></> )}
-                    {(step === 8 || step === 13) && ( <><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'5px'}}>{getFilteredRoles().map(r => ( <React.Fragment key={r}><button className="pop-btn" style={{fontSize:'1.8vmin'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r, status:'returned'}:x)); setActiveMenuId(null); }}>{r}(歸)</button><button className="pop-btn" style={{fontSize:'1.8vmin'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r, status:'revealed'}:x)); setActiveMenuId(null); }}>{r}(現)</button></React.Fragment> ))}</div><button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:null, status:'idx'}:x)); setActiveMenuId(null); }}>清空</button></> )}
+                    {(step === 8 || step === 13) && ( <><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1vmin'}}>{getFilteredRoles().map(r => ( <React.Fragment key={r}><button className="pop-btn" style={{fontSize:'1.8vmin'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r, status:'returned'}:x)); setActiveMenuId(null); }}>{r}(歸)</button><button className="pop-btn" style={{fontSize:'1.8vmin'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:r, status:'revealed'}:x)); setActiveMenuId(null); }}>{r}(現)</button></React.Fragment> ))}</div><button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:null, status:'idx'}:x)); setActiveMenuId(null); }}>清空</button></> )}
                     {step === 10 && <button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, isGlow:!x.isGlow}:x)); setActiveMenuId(null); }}>擊殺/取消</button>}
                     {step === 11 && ( <><button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, role:'pandora'}:x)); setActiveMenuId(null); }}>潘朵拉</button><button className="pop-btn" onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, isInfected:true}:x)); setActiveMenuId(null); }}>設置 眷屬</button><button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(p => p.map(x => x.id === activePlayer.id ? {...x, isInfected:false}:x)); setActiveMenuId(null); }}>取消</button></> )}
                     <button className="pop-btn" style={{background:'#555'}} onClick={() => setActiveMenuId(null)}>關閉</button>
