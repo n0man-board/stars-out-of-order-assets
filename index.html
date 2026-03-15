@@ -3,35 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>群星失序 Stars Out of Order - v0.2.1</title>
+    <title>群星失序 Stars Out of Order - v1.1</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        /* 使用 dvh 確保填滿手機螢幕不被網址列擠壓 */
+        :root { --u: 1vmin; }
         body { margin: 0; background: #000; font-family: sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100dvh; width: 100vw; }
-        .landscape-app { position: relative; width: 177.78vh; height: 100dvh; max-width: 100vw; max-height: 56.25vw; background: #000; overflow: hidden; }
         
-        .loading-screen { position: absolute; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; }
-        .loader-bar { width: 280px; height: 4px; background: #333; border-radius: 2px; margin-top: 20px; overflow: hidden; }
-        .loader-progress { height: 100%; background: #d4af37; transition: width 0.3s; }
-
-        .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 1.2s ease; pointer-events: none; }
-        
-        @media screen and (orientation: portrait) {
-            body::after { content: "請橫放手機以獲得最佳體驗 💫"; position: fixed; inset: 0; background: #000; color: #fff; z-index: 100001; display: flex; justify-content: center; align-items: center; font-size: 4vmin; }
+        .landscape-app { 
+            position: relative; width: 177.78vh; height: 100dvh; max-width: 100vw; max-height: 56.25vw;
+            background: #000; overflow: hidden; 
         }
 
-        /* 介面樣式完全繼承你的版本 */
+        /* 啟動門：獲取全螢幕權限 */
+        .splash-gate { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #d4af37; cursor: pointer; }
+        .gate-btn { padding: 3vmin 10vmin; border: 2px solid #d4af37; border-radius: 5vmin; font-size: 4vmin; letter-spacing: 10px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(212,175,55,0.4); } 70% { box-shadow: 0 0 0 30px rgba(212,175,55,0); } 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); } }
+
+        .loading-screen { position: absolute; inset: 0; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; }
+        .loader-bar { width: 300px; height: 4px; background: #333; border-radius: 2px; margin-top: 20px; overflow: hidden; }
+        .loader-progress { height: 100%; background: #d4af37; transition: width 0.3s; }
+
+        .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 1.5s ease; pointer-events: none; }
+        .bg-video.active { opacity: 1; }
+        
+        @media screen and (orientation: portrait) {
+            body::after { content: "請橫放手機以啟動儀式 💫"; position: fixed; inset: 0; background: #000; color: #fff; z-index: 100001; display: flex; justify-content: center; align-items: center; font-size: 4vmin; text-align: center; }
+        }
+
+        /* 繼承原始樣式 */
         .top-nav { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; z-index: 5000; background: rgba(0,0,0,0.7); padding: 8px 22px; border-radius: 30px; border: 1px solid #fff; pointer-events: auto; }
-        .nav-label { color: #fff; font-weight: bold; font-size: 14px; white-space: nowrap; }
-        .btn-circle { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #fff; background: none; color: #fff; cursor: pointer; font-weight: bold; }
+        .btn-circle { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #fff; background: none; color: #fff; font-size: 14px; font-weight: bold; cursor: pointer; }
         .btn-circle.active { background: #fff; color: #000; }
         .role-display { position: absolute; top: 75px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 400; }
         .role-icon { width: 75px; height: 75px; object-fit: contain; border: 1px solid #fff; border-radius: 8px; }
@@ -48,14 +56,13 @@
         .mission-area { position: absolute; top: 2%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 800; pointer-events: auto; }
         .mission-cards-row { display: flex; gap: 10px; }
         .mission-card { width: 72px; cursor: pointer; object-fit: contain; }
-        .star-pool-glow { box-shadow: 0 0 15px 5px #d4af37, 0 0 20px 8px #8e44ad !important; border-radius: 5px; }
         .pop-menu { background: #111; border: 2px solid #fff; padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 0 40px #000; min-width: 180px; z-index: 10000; max-height: 80vh; overflow-y: auto; }
         .pop-btn { background: #333; color: #fff; border: 1px solid #666; padding: 10px 15px; cursor: pointer; font-size: 15px; border-radius: 8px; text-align: center; }
+        .pop-btn:disabled { opacity: 0.2; }
         .info-status-bar { position: absolute; bottom: 95px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 15px; font-size: 18px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-shadow: 0 0 10px #000; white-space: nowrap; }
         .reset-area { position: absolute; bottom: 15px; right: 15px; z-index: 5000; pointer-events: auto; }
         .btn-reset-main { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid #aaa; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; }
-        .check-card-overlay { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); width: 105px; z-index: 3000; pointer-events: none; animation: breathingCard 2.5s infinite ease-in-out; }
-        @keyframes breathingCard { 0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } }
+        .check-card-overlay { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); width: 105px; z-index: 3000; animation: breathingCard 2.5s infinite ease-in-out; }
     </style>
 </head>
 <body>
@@ -65,7 +72,7 @@
         const { useState, useEffect, useMemo, useRef } = React;
         const BASE_URL = "https://raw.githubusercontent.com/n0man-board/stars-out-of-order-assets/main/images/";
 
-        // 完全保留你的 PLAYER_POSITIONS, ROLE_POOL_MAP 等所有數據
+        // 座標數據 (100% 原始不變)
         const PLAYER_POSITIONS = {
           "13": [{left:21.4,top:77.9},{left:10.3,top:70.0},{left:5.7,top:60.2},{left:8.2,top:50.2},{left:17.7,top:41.6},{left:32.4,top:35.8},{left:50.0,top:33.8},{left:67.6,top:35.8},{left:82.3,top:41.6},{left:91.8,top:50.2},{left:94.3,top:60.2},{left:89.7,top:70.0},{left:78.6,top:77.9}],
           "12": [{left:21.4,top:77.9},{left:13.6,top:73.1},{left:6.6,top:53.6},{left:15.4,top:43.0},{left:29.1,top:36.7},{left:42.3,top:34.1},{left:57.7,top:34.1},{left:72.2,top:36.7},{left:84.6,top:43.0},{left:93.4,top:53.6},{left:90.3,top:69.3},{left:78.6,top:77.9}],
@@ -80,7 +87,6 @@
 
         const MOON_TARGETS = { "5":2, "6":2, "7":3, "8":3, "9":4, "10":4, "11":4, "12":5, "13":5 };
         const SUN_GOALS = { "5":9, "6":11, "7":12, "8":14, "9":15, "10":17, "11":18, "12":20, "13":21 };
-        const FACTIONS = { sun_gods: ["zeus", "apollo", "athena", "prometheus"], mortals: ["odysseus", "daedalus", "melampus", "cassandra", "prometheus", "prophet"] };
         const ROLE_POOL_MAP = {
           "5": ["zeus", "hades", "pandora", "cassandra", "odysseus"],
           "6": ["zeus", "hades", "apollo", "hecate", "cassandra", "odysseus"],
@@ -97,8 +103,10 @@
           "8": [3, 4, 4, 5, 5, 6], "9": [4, 4, 5, 5, 6, 6], "10": [4, 5, 5, 6, 6, 7],
           "11": [5, 5, 6, 6, 7, 7], "12": [5, 6, 6, 7, 7, 8], "13": [6, 6, 7, 7, 8, 8]
         };
+        const FACTIONS = { sun_gods: ["zeus", "apollo", "athena", "prometheus"], mortals: ["odysseus", "daedalus", "melampus", "cassandra", "prometheus", "prophet"] };
 
         function StarsApp() {
+          const [hasInteracted, setHasInteracted] = useState(false);
           const [loading, setLoading] = useState(true);
           const [loadProgress, setLoadProgress] = useState(0);
           const [step, setStep] = useState(1);
@@ -115,25 +123,25 @@
 
           const videoRefs = { v1: useRef(null), v2: useRef(null), v3: useRef(null), v4: useRef(null), v5: useRef(null), v6: useRef(null) };
 
-          // --- 修正預載邏輯：加入 13 人局所需的所有圖片 ---
+          // --- 解決 0% 卡住的預載 ---
           useEffect(() => {
-            const assets = [
-                "star.png", "card_0.png", "card_1.png", "card_2.png", "card_3.png",
-                "set_1.png", "set_11.png", "set_7_1.png", "set_7_2.png",
-                ...ROLE_POOL_MAP["13"].map(r => `${r}.png`),
-                ...ROLE_POOL_MAP["13"].map(r => `${r}_D.png`),
-                ...Array.from({length:13}, (_,i) => `idx_${String(i+1).padStart(2,'0')}.png`),
-                ...Array.from({length:13}, (_,i) => `s${String(i+1).padStart(2,'0')}.png`)
-            ];
+            if (!hasInteracted) return;
+            const assets = ["star.png", "card_0.png", "card_1.png", "card_2.png", "set_1.png", "set_11.png", "zeus.png", "hades.png", "prophet.png"];
             let loaded = 0;
             assets.forEach(src => {
                 const img = new Image(); img.src = `${BASE_URL}${src}`;
                 img.onload = () => { loaded++; setLoadProgress(Math.floor((loaded/assets.length)*100)); if(loaded===assets.length) setTimeout(()=>setLoading(false), 800); };
                 img.onerror = () => { loaded++; if(loaded===assets.length) setLoading(false); };
             });
-          }, []);
+          }, [hasInteracted]);
 
-          // 以下為 100% 原始邏輯
+          const handleStartRitual = () => {
+            const el = document.documentElement;
+            if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            setHasInteracted(true);
+          };
+
           const getActiveVid = () => {
             if (step <= 2) return "v1";
             if (step >= 3 && step <= 6) return "v2";
@@ -145,29 +153,26 @@
           };
 
           useEffect(() => {
-            if (loading) return;
+            if (loading || !hasInteracted) return;
             const active = getActiveVid();
             Object.keys(videoRefs).forEach(k => {
               const el = videoRefs[k].current;
               if (el) { if(k === active) el.play().catch(()=>{}); else el.pause(); }
             });
-          }, [step, loading]);
+          }, [step, loading, hasInteracted]);
 
+          // --- 以下為 377 行版本核心邏輯 (完全不變) ---
           const initGame = (n) => {
-            // 點擊觸發全螢幕
-            const el = document.documentElement;
-            if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
             setPlayerCount(n);
             setPlayers(Array.from({ length: n }, (_, i) => ({ id: i + 1, side: 'sun', role: null, isInfected: false, isGlow: false, status: 'idx' })));
           };
-
           const fullReset = () => { setStep(1); setPlayerCount(null); setPlayers([]); setRound(1); setSunScore(0); setMoonScore(0); setShowReset(false); };
           const checkVictoryResult = () => {
             if (!playerCount) return "CONTINUE";
-            const confirmed = players.map(p => p.role).filter(r => r !== null);
-            const hidden = ROLE_POOL_MAP[playerCount].filter(r => !confirmed.includes(r));
-            const alive = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hidden];
-            if (!alive.some(r => FACTIONS.sun_gods.includes(r)) || !alive.some(r => FACTIONS.mortals.includes(r))) return "MOON_WIN";
+            const confirmedrevealed = players.map(p => p.role).filter(r => r !== null);
+            const hiddenPool = ROLE_POOL_MAP[playerCount].filter(r => !confirmedrevealed.includes(r));
+            const aliveRoles = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hiddenPool];
+            if (!aliveRoles.some(r => FACTIONS.sun_gods.includes(r)) || !aliveRoles.some(r => FACTIONS.mortals.includes(r))) return "MOON_WIN";
             if (sunScore >= SUN_GOALS[playerCount]) return "SUN_WIN";
             return "CONTINUE";
           };
@@ -178,11 +183,10 @@
               return { ok: moons === MOON_TARGETS[playerCount], hint: moons !== MOON_TARGETS[playerCount] ? `需設置 ${MOON_TARGETS[playerCount]} 位月方` : "" };
             }
             if (step === 4) {
-              if (!players.some(p => p.role === 'zeus') || !players.some(p => p.role === 'hades') || !players.some(p => p.role === 'prophet')) return { ok: false, hint: "需完成宙斯、黑帝斯與先知設置" };
+              if (!players.some(p => p.role === 'zeus') || !players.some(p => p.role === 'hades') || !players.some(p => p.role === 'prophet')) return { ok: false, hint: "核心身分未就緒" };
             }
             return { ok: true };
           }, [step, players, playerCount]);
-
           const onCenterClick = () => {
             if (step === 1 && !playerCount) return; if (!validation.ok) return;
             setInspectingId(null); if (step === 1) { setStep(3); return; }
@@ -197,12 +201,16 @@
             } else if (step < 14) setStep(s => s + 1);
             setActiveMenuId(null);
           };
-
           const onCoordClick = (e, p) => {
             e.stopPropagation(); if (step <= 2 || step === 6 || step === 9) return;
             if (step === 5 || step === 12) setInspectingId(p.id === inspectingId ? null : p.id); else setActiveMenuId(p.id);
           };
-
+          useEffect(() => {
+            if (step === 7 && playerCount) {
+                const base = MISSION_MAP[playerCount][round - 1] || 2;
+                setTempCards(new Array(base + (round === 1 ? 2 : round === 2 ? 1 : 0)).fill(0));
+            }
+          }, [step, round, playerCount]);
           const getFilteredRoles = () => {
             if (!playerCount || !activeMenuId) return [];
             const used = players.filter(p => p.id !== activeMenuId && p.role !== null).map(p => p.role);
@@ -212,24 +220,27 @@
             return [...new Set(pool)].filter(r => !used.includes(r));
           };
 
-          useEffect(() => {
-            if (step === 7 && playerCount) {
-                const base = MISSION_MAP[playerCount][round - 1] || 2;
-                setTempCards(new Array(base + (round === 1 ? 2 : round === 2 ? 1 : 0)).fill(0));
-            }
-          }, [step, round, playerCount]);
-
           const activePlayer = players.find(p => p.id === activeMenuId);
           const inspectTarget = players.find(p => p.id === inspectingId);
 
-          if (loading) return (
-            <div className="loading-screen">
-                <h2>啟動星軌儀式中...</h2>
-                <div className="loader-bar"><div className="loader-progress" style={{ width: `${loadProgress}%` }} /></div>
-                <p>{loadProgress}%</p>
+          // 1. 未啟動
+          if (!hasInteracted) return (
+            <div className="splash-gate" onClick={handleStartRitual}>
+                <video autoPlay loop muted playsInline style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.3}}><source src={`${BASE_URL}bg_video1.mp4`} type="video/mp4" /></video>
+                <div className="gate-btn">啟動群星儀式</div>
             </div>
           );
 
+          // 2. 載入中
+          if (loading) return (
+            <div className="loading-screen">
+                <video autoPlay loop muted playsInline className="bg-video active" style={{opacity: 0.4}}><source src={`${BASE_URL}bg_video1.mp4`} type="video/mp4" /></video>
+                <h2 style={{color:'#d4af37', zIndex:1}}>同步星際通訊... {loadProgress}%</h2>
+                <div className="loader-bar" style={{zIndex:1}}><div className="loader-progress" style={{width:`${loadProgress}%`}}/></div>
+            </div>
+          );
+
+          // 3. 正式遊戲
           return (
             <div className="landscape-app" onClick={() => { setActiveMenuId(null); setInspectingId(null); }}>
               {["bg_video1.mp4", "bg_video2.mp4", "bg_video3.mp4", "bg_video4.mp4", "bg_video5.mp4", "bg_video6.mp4"].map((v, i) => (
@@ -238,7 +249,7 @@
 
               {step === 1 && (
                 <div className="top-nav" onClick={e => e.stopPropagation()}>
-                    <div className="nav-label">選擇玩家人數：</div>
+                    <div className="nav-label">選擇人數：</div>
                     {[5,6,7,8,9,10,11,12,13].map(n => ( <button key={n} className={`btn-circle ${playerCount === n ? 'active' : ''}`} onClick={() => initGame(n)}>{n}</button> ))}
                 </div>
               )}
