@@ -1,0 +1,16 @@
+{
+  "name": "群星失序 GM助手",
+  "short_name": "群星GM",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/n0man-board/stars-out-of-order-assets/main/images/star.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
