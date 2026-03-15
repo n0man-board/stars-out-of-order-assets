@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>群星失序 Stars Out of Order - GM助手</title>
+    <title>群星失序 GM助手 - V3效能版</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,134 +14,83 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-			   
-															
-						  
-		 
-
+        :root { --u: 1vmin; }
         body { 
-		
-		 
             margin: 0; background: #000; font-family: sans-serif; 
             overflow: hidden; display: flex; justify-content: center; align-items: center; 
-		 
-		  
-		 
             height: 100vh; width: 100vw;
-	   
         }
 
-        /* 核心自適應容器：確保 16:9 比例且不超出螢幕 */
+        /* 16:9 自動縮放容器：確保不論手機多長，內容都不會被裁切 */
         .landscape-app { 
             position: relative; 
-				  
-		
-            width: 100vw; 
-            height: 56.25vw; 
-            max-height: 100vh; 
-            max-width: 177.78vh; 
-            background: #000; 
-            overflow: hidden; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-		  
-		
-			 
+            width: 177.78vh; height: 100vh;
+            max-width: 100vw; max-height: 56.25vw;
+            background: #000; overflow: hidden;
+            box-shadow: 0 0 5vmin rgba(0,0,0,1);
         }
 
-        /* 直向提醒 */
+        /* 手機直放提醒 */
         @media screen and (orientation: portrait) {
             body::after {
                 content: "請將手機橫放以獲得最佳體驗 💫";
                 position: fixed; inset: 0; background: #000; color: #fff;
                 z-index: 10000; display: flex; justify-content: center;
-                align-items: center; font-size: 20px; text-align: center; padding: 20px;
-		 
+                align-items: center; font-size: 4vmin; text-align: center;
             }
         }
 
-        /* 以下為你提供的最新樣式修正 */
-        .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 1.2s ease; }
+        .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
         
-        .top-nav { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; z-index: 5000; background: rgba(0,0,0,0.7); padding: 8px 22px; border-radius: 30px; border: 1px solid #fff; pointer-events: auto; }
-				   
-																					
-																			 
-																					 
-										
-		 
-        .nav-label { color: #fff; font-weight: bold; font-size: 14px; white-space: nowrap; }
-					  
-																							  
-        .btn-circle { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #fff; background: none; color: #fff; cursor: pointer; font-weight: bold; }
-		 
+        /* 導覽列：改用 vmin，字體不再巨大 */
+        .top-nav { position: absolute; top: 2vmin; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1.5vmin; z-index: 5000; background: rgba(0,0,0,0.7); padding: 1vmin 3vmin; border-radius: 4vmin; border: 0.15vmin solid #fff; }
+        .nav-label { color: #fff; font-weight: bold; font-size: 1.8vmin; white-space: nowrap; }
+        .btn-circle { width: 4.2vmin; height: 4.2vmin; border-radius: 50%; border: 0.15vmin solid #fff; background: none; color: #fff; font-size: 1.6vmin; font-weight: bold; }
         .btn-circle.active { background: #fff; color: #000; }
 
-								
-        .role-display { position: absolute; top: 75px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 400; }
-        .role-icon { width: 75px; height: 75px; object-fit: cover; border: 1px solid #fff; border-radius: 8px; }
+        .role-display { position: absolute; top: 11vmin; left: 50%; transform: translateX(-50%); display: flex; gap: 1.2vmin; z-index: 400; }
+        .role-icon { width: 8.5vmin; height: 8.5vmin; object-fit: cover; border: 0.15vmin solid #fff; border-radius: 1vmin; }
 
-        @keyframes breathingUI { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-        .center-btn-box { position: absolute; left: 50%; transform: translate(-50%, -50%); width: 45%; z-index: 100; pointer-events: none; display: flex; flex-direction: column; align-items: center; transition: top 0.3s ease; animation: breathingUI 3s infinite ease-in-out; }
-        .center-img { width: 100%; height: auto; }
-        .center-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; z-index: 110; pointer-events: auto; cursor: pointer; }
+        .center-btn-box { position: absolute; left: 50%; transform: translate(-50%, -50%); width: 42%; z-index: 100; pointer-events: none; transition: top 0.3s ease; }
+        .center-img { width: 100%; }
+        .center-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; z-index: 110; pointer-events: auto; }
 
-        .lock-hint { color: #ff4d4d; font-weight: bold; font-size: 16px; text-shadow: 0 0 10px #000; margin-top: 5px; background: rgba(0,0,0,0.4); padding: 2px 15px; border-radius: 10px; }
+        .lock-hint { color: #ff4d4d; font-weight: bold; font-size: 2.2vmin; margin-top: 1vmin; background: rgba(0,0,0,0.4); padding: 0.5vmin 2vmin; border-radius: 1vmin; }
 
-        /* 這裡套用你修正後的 5.12% 寬度 */
-        .coord-slot { position: absolute; width: 5.12%; aspect-ratio: 1/1.4; transform: translate(-50%, -50%); z-index: 1000; cursor: pointer; pointer-events: auto; }
-        .card-wrap { position: relative; width: 100%; height: 100%; border-radius: 6px; pointer-events: none; }
-        
-        .glow-red { box-shadow: 0 0 25px 10px rgba(255, 0, 0, 0.9) !important; }
-        .glow-blue { box-shadow: 0 0 25px 10px rgba(0, 100, 255, 0.9) !important; }
-        .glow-gold { box-shadow: 0 0 25px 10px rgba(255, 215, 0, 0.9) !important; }
-        .glow-teal { box-shadow: 0 0 25px 10px rgba(0, 255, 220, 0.9) !important; }
-        .glow-inspect { box-shadow: 0 0 35px 15px rgba(255, 240, 0, 1) !important; z-index: 1001; }
+        /* 玩家座標與發光效果調整 */
+        .coord-slot { position: absolute; width: 5.12%; aspect-ratio: 1/1.4; transform: translate(-50%, -50%); z-index: 1000; }
+        .glow-red { box-shadow: 0 0 2.5vmin 1vmin rgba(255, 0, 0, 0.9) !important; }
+        .glow-blue { box-shadow: 0 0 2.5vmin 1vmin rgba(0, 100, 255, 0.9) !important; }
+        .glow-gold { box-shadow: 0 0 2.5vmin 1vmin rgba(255, 215, 0, 0.9) !important; }
+        .glow-teal { box-shadow: 0 0 2.5vmin 1vmin rgba(0, 255, 220, 0.9) !important; }
+        .glow-inspect { box-shadow: 0 0 3.5vmin 1.5vmin rgba(255, 240, 0, 1) !important; z-index: 1001; }
 
-        .counter-box { position: absolute; top: 20px; font-size: 32px; font-weight: 900; color: #fff; z-index: 600; text-shadow: 0 0 10px #000; }
-        .sun-counter { left: 40px; color: #f1c40f; }
-        .moon-counter { right: 40px; color: #9b59b6; }
-																		 
+        .counter-box { position: absolute; top: 3vmin; font-size: 4.5vmin; font-weight: 900; color: #fff; z-index: 600; text-shadow: 0 0 1vmin #000; }
+        .sun-counter { left: 4vmin; color: #f1c40f; }
+        .moon-counter { right: 4vmin; color: #9b59b6; }
 
-        .mission-area { position: absolute; top: 2%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 800; pointer-events: auto; }
-        .mission-cards-row { display: flex; gap: 10px; }
-        .mission-card { width: 72px; cursor: pointer; }
-        
-        .star-pool-glow { box-shadow: 0 0 15px 5px #d4af37, 0 0 20px 8px #8e44ad !important; border-radius: 5px; }
-        .mission-legend { color: #d4af37; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 2px 10px; border-radius: 10px; border: 1px solid #8e44ad; }
-							  
-																					  
+        .mission-area { position: absolute; top: 2%; left: 50%; transform: translateX(-50%); z-index: 800; display: flex; flex-direction: column; align-items: center; }
+        .mission-card { width: 8vmin; margin: 0 0.5vmin; }
+        .mission-legend { color: #d4af37; font-size: 1.5vmin; font-weight: bold; background: rgba(0,0,0,0.6); padding: 0.5vmin 1.5vmin; border-radius: 1vmin; border: 0.1vmin solid #8e44ad; }
 
-        .pop-menu { position: absolute; background: #111; border: 2px solid #fff; padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 0 40px #000; min-width: 180px; z-index: 9999; max-height: 80vh; overflow-y: auto; }
-        .pop-btn { background: #333; color: #fff; border: 1px solid #666; padding: 10px 15px; cursor: pointer; font-size: 15px; border-radius: 8px; text-align: center; }
-        .pop-btn:hover:not(:disabled) { background: #fff; color: #000; }
-        .pop-btn:disabled { opacity: 0.15; cursor: not-allowed; }
-				 
-
-        .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: flex; justify-content: center; align-items: center; }
-
-        @keyframes breathingCard { 0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } }
-        .check-card-overlay { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); width: 105px; z-index: 3000; pointer-events: none; animation: breathingCard 2.5s infinite ease-in-out; }
-
-        .reset-area { position: absolute; bottom: 15px; right: 15px; z-index: 5000; pointer-events: auto; }
-        .btn-reset-main { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid #aaa; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; backdrop-filter: blur(5px); }
-		 
-        
-        .info-status-bar { position: absolute; bottom: 95px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 15px; font-size: 18px; font-weight: bold; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); text-shadow: 0 0 10px #000; }
-																						   
+        .pop-menu { background: #111; border: 0.2vmin solid #fff; padding: 2vmin; border-radius: 2vmin; gap: 1vmin; min-width: 25vmin; box-shadow: 0 0 5vmin #000; }
+        .pop-btn { background: #333; color: #fff; border: 0.1vmin solid #666; padding: 1.2vmin 2vmin; font-size: 2vmin; border-radius: 1.2vmin; }
+        .info-status-bar { position: absolute; bottom: 12vmin; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 1vmin 4vmin; border-radius: 2.5vmin; font-size: 2.5vmin; white-space: nowrap; border: 0.15vmin solid rgba(255,255,255,0.2); }
+        .check-card-overlay { position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); width: 14vmin; z-index: 3000; }
+        .btn-reset-main { background: rgba(255,255,255,0.15); color: #fff; border: 0.15vmin solid #aaa; padding: 1vmin 2vmin; border-radius: 3vmin; font-size: 1.8vmin; backdrop-filter: blur(5px); }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // 此處已完整嵌入你提供的 JS 邏輯與數據
         const { useState, useEffect, useMemo } = React;
-
         const BASE_URL = "https://raw.githubusercontent.com/n0man-board/stars-out-of-order-assets/main/images/";
 
+        // 直接套用你提供的所有數據清單
         const PLAYER_POSITIONS = {
           "13": [{left:21.4,top:77.9},{left:10.3,top:70.0},{left:5.7,top:60.2},{left:8.2,top:50.2},{left:17.7,top:41.6},{left:32.4,top:35.8},{left:50.0,top:33.8},{left:67.6,top:35.8},{left:82.3,top:41.6},{left:91.8,top:50.2},{left:94.3,top:60.2},{left:89.7,top:70.0},{left:78.6,top:77.9}],
-          "12": [{left:21.4,top:77.9},{left:13.6,top:73.1},{left:6.6,top:53.6},{left:15.4,top:43.0},{left:29.1,top:36.7},{left:42.3,top:34.1},{left:57.7,top:34.1},{left:72.2,top:36.7},{left:84.6,top:43.0},{left:93.4,top:53.6},{left:90.3,top:79.3},{left:78.6,top:77.9}],
+          "12": [{left:21.4,top:77.9},{left:13.6,top:73.1},{left:6.6,top:53.6},{left:15.4,top:43.0},{left:29.1,top:36.7},{left:42.3,top:34.1},{left:57.7,top:34.1},{left:72.2,top:36.7},{left:84.6,top:43.0},{left:93.4,top:53.6},{left:90.3,top:69.3},{left:78.6,top:77.9}],
           "11": [{left:21.4,top:77.9},{left:8.6,top:67.7},{left:8.2,top:50.2},{left:19.7,top:40.5},{left:34.8,top:35.3},{left:50.0,top:33.8},{left:65.2,top:35.3},{left:80.3,top:40.5},{left:91.8,top:50.2},{left:91.4,top:67.7},{left:78.6,top:77.9}],
           "10": [{left:21.4,top:77.9},{left:8.2,top:67.3},{left:8.2,top:50.2},{left:21.4,top:39.6},{left:40.0,top:34.4},{left:60.0,top:34.4},{left:78.6,top:39.6},{left:91.8,top:50.2},{left:91.8,top:67.3},{left:78.6,top:77.9}],
           "9": [{left:21.4,top:77.9},{left:7.1,top:65.3},{left:13.6,top:44.4},{left:31.2,top:36.1},{left:50.0,top:33.8},{left:68.8,top:38.4},{left:86.4,top:44.4},{left:92.9,top:65.3},{left:78.6,top:77.9}],
@@ -153,12 +102,10 @@
 
         const MOON_TARGETS = { "5":2, "6":2, "7":3, "8":3, "9":4, "10":4, "11":4, "12":5, "13":5 };
         const SUN_GOALS = { "5":9, "6":11, "7":12, "8":14, "9":15, "10":17, "11":18, "12":20, "13":21 };
-
         const FACTIONS = {
           sun_gods: ["zeus", "apollo", "athena", "prometheus"],
           mortals: ["odysseus", "daedalus", "melampus", "cassandra", "prometheus", "prophet"]
         };
-
         const ROLE_POOL_MAP = {
           "5": ["zeus", "hades", "pandora", "cassandra", "odysseus"],
           "6": ["zeus", "hades", "apollo", "hecate", "cassandra", "odysseus"],
@@ -170,7 +117,6 @@
           "12": ["zeus", "hades", "apollo", "hecate", "prometheus", "charon", "cerberus", "pandora", "cassandra", "odysseus", "daedalus", "melampus"],
           "13": ["zeus", "hades", "apollo", "hecate", "prometheus", "athena", "charon", "cerberus", "pandora", "cassandra", "odysseus", "daedalus", "melampus"]
         };
-
         const MISSION_MAP = {
           "5": [2, 2, 3, 3, 4, 4], "6": [2, 3, 3, 4, 4, 5], "7": [3, 3, 4, 4, 5, 5],
           "8": [3, 4, 4, 5, 5, 6], "9": [4, 4, 5, 5, 6, 6], "10": [4, 5, 5, 6, 6, 7],
@@ -190,27 +136,30 @@
           const [activeMenuId, setActiveMenuId] = useState(null);
           const [showReset, setShowReset] = useState(false);
 
+          // 核心修正：效能優化，只渲染一個影片並根據 step 動態切換網址
+          const bgVidSrc = useMemo(() => {
+              if (step <= 2) return "bg_video1.mp4";
+              if (step >= 3 && step <= 6) return "bg_video2.mp4";
+              if (step === 7 || step === 8 || step === 12 || step === 13) return "bg_video3.mp4";
+              if (step >= 9 && step <= 11) return "bg_video4.mp4";
+              if (step === 14) return "bg_video5.mp4";
+              if (step === 15) return "bg_video6.mp4";
+              return "bg_video4.mp4";
+          }, [step]);
+
           const initGame = (n) => {
             setPlayerCount(n);
-            setPlayers(Array.from({ length: n }, (_, i) => ({
-              id: i + 1, side: 'sun', role: null, isInfected: false, isGlow: false, status: 'idx'
-            })));
+            setPlayers(Array.from({ length: n }, (_, i) => ({ id: i + 1, side: 'sun', role: null, isInfected: false, isGlow: false, status: 'idx' })));
             setInspectingId(null);
-
-																  
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            }
+            if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(()=>{}); }
           };
 
           const fullReset = () => {
-            setStep(1); setPlayerCount(null); setPlayers([]); setRound(1);
-            setSunScore(0); setMoonScore(0); setInspectingId(null); setShowReset(false);
+            setStep(1); setPlayerCount(null); setPlayers([]); setRound(1); setSunScore(0); setMoonScore(0); setInspectingId(null); setShowReset(false);
           };
 
           const sunTarget = playerCount ? SUN_GOALS[playerCount] : 0;
           const progress = sunTarget ? Math.round((sunScore / sunTarget) * 100) : 0;
-
           const hitMilestone = useMemo(() => {
             const milestones = [3, 5, 8, 11, 14, 17, 20];
             return milestones.some(m => sunScore >= m && lastSunScore < m);
@@ -221,13 +170,8 @@
             const fullPool = ROLE_POOL_MAP[playerCount];
             const confirmedRevealed = players.map(p => p.role).filter(r => r !== null);
             const hiddenPool = fullPool.filter(r => !confirmedRevealed.includes(r));
-            const aliveRoles = [
-                ...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role),
-                ...hiddenPool
-            ];
-            const isSunGodsExtinct = !aliveRoles.some(r => FACTIONS.sun_gods.includes(r));
-            const isMortalsExtinct = !aliveRoles.some(r => FACTIONS.mortals.includes(r));
-            if (isSunGodsExtinct || isMortalsExtinct) return "MOON_WIN";
+            const aliveRoles = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hiddenPool];
+            if (!aliveRoles.some(r => FACTIONS.sun_gods.includes(r)) || !aliveRoles.some(r => FACTIONS.mortals.includes(r))) return "MOON_WIN";
             if (sunScore >= sunTarget) return "SUN_WIN";
             return "CONTINUE";
           };
@@ -240,10 +184,7 @@
               return { ok: moons === target, hint: moons !== target ? `需設置 ${target} 位月方 (目前 ${moons})` : "" };
             }
             if (step === 4) {
-              const hasZeus = players.some(p => p.role === 'zeus');
-              const hasHades = players.some(p => p.role === 'hades');
-              const hasProphet = players.some(p => p.role === 'prophet');
-              if (!hasZeus || !hasHades || !hasProphet) return { ok: false, hint: "需設置宙斯、黑帝斯與先知" };
+              if (!players.some(p => p.role === 'zeus') || !players.some(p => p.role === 'hades') || !players.some(p => p.role === 'prophet')) return { ok: false, hint: "需設置宙斯、黑帝斯與先知" };
             }
             return { ok: true };
           }, [step, players, playerCount]);
@@ -258,16 +199,6 @@
             return `set_${step - 1}.png`;
           }, [step, playerCount, hitMilestone]);
 
-          const bgVid = useMemo(() => {
-            if (step <= 2) return "bg_video1.mp4";
-            if (step >= 3 && step <= 6) return "bg_video2.mp4";
-            if (step === 7 || step === 8 || step === 12 || step === 13) return "bg_video3.mp4";
-            if (step >= 9 && step <= 11) return "bg_video4.mp4";
-            if (step === 14) return "bg_video5.mp4";
-            if (step === 15) return "bg_video6.mp4";
-            return "bg_video4.mp4";
-          }, [step]);
-
           const onCenterClick = () => {
             if (step === 1 && !playerCount) return;
             if (!validation.ok) return;
@@ -277,31 +208,21 @@
               setLastSunScore(sunScore); 
               let s = 0, m = 0;
               tempCards.forEach(c => { if(c === 1) s++; if(c === 2) m++; });
-              setSunScore(v => v + s);
-              setMoonScore(v => v + m);
+              setSunScore(v => v + s); setMoonScore(v => v + m);
             }
             if (step === 13) {
-              const result = checkVictoryResult();
-              if (result === "MOON_WIN") setStep(15);
-              else if (result === "SUN_WIN") setStep(14);
-              else {
-                setRound(r => r + 1);
-                setPlayers(prev => prev.map(p => ({ ...p, isGlow: false })));
-                setStep(7);
-              }
-            } else if (step < 14) {
-              setStep(s => s + 1);
-            }
+              const res = checkVictoryResult();
+              if (res === "MOON_WIN") setStep(15);
+              else if (res === "SUN_WIN") setStep(14);
+              else { setRound(r => r + 1); setPlayers(prev => prev.map(p => ({ ...p, isGlow: false }))); setStep(7); }
+            } else if (step < 14) { setStep(s => s + 1); }
             setActiveMenuId(null);
           };
 
           const onCoordClick = (e, p) => {
             e.stopPropagation();
             if (step <= 2 || step === 6 || step === 9) return;
-            if (step === 5 || step === 12) {
-              setInspectingId(p.id === inspectingId ? null : p.id);
-              return;
-            }
+            if (step === 5 || step === 12) { setInspectingId(p.id === inspectingId ? null : p.id); return; }
             setActiveMenuId(p.id);
           };
 
@@ -313,11 +234,7 @@
             return base;
           }, [playerCount, round]);
 
-          useEffect(() => {
-            if (step === 7 && playerCount) {
-              setTempCards(new Array(missionCardsCount).fill(0));
-            }
-          }, [step, round, playerCount, missionCardsCount]);
+          useEffect(() => { if (step === 7 && playerCount) setTempCards(new Array(missionCardsCount).fill(0)); }, [step, round, playerCount, missionCardsCount]);
 
           const activePlayer = useMemo(() => players.find(p => p.id === activeMenuId), [activeMenuId, players]);
           const inspectTarget = useMemo(() => players.find(p => p.id === inspectingId), [inspectingId, players]);
@@ -325,21 +242,17 @@
           const getFilteredRoles = () => {
             if (!playerCount) return [];
             const usedRoles = players.filter(p => p.id !== activeMenuId && p.role !== null).map(p => p.role);
-            const core = ["zeus", "hades", "prophet"];
-            const pool = ROLE_POOL_MAP[playerCount];
-            let finalPool = [...new Set([...core, ...pool])];
-            if (step === 4 && activePlayer) {
-                if (activePlayer.side === 'moon') finalPool = ["hades"];
-                else finalPool = ["zeus", "prophet"];
-            }
+            let finalPool = [...new Set(["zeus", "hades", "prophet", ...ROLE_POOL_MAP[playerCount]])];
+            if (step === 4 && activePlayer) { finalPool = activePlayer.side === 'moon' ? ["hades"] : ["zeus", "prophet"]; }
             return finalPool.filter(role => !usedRoles.includes(role));
           };
 
           return (
             <div className="landscape-app" onClick={() => { setActiveMenuId(null); setInspectingId(null); }}>
-              {["bg_video1.mp4", "bg_video2.mp4", "bg_video3.mp4", "bg_video4.mp4", "bg_video5.mp4", "bg_video6.mp4"].map(v => (
-                <video key={v} className="bg-video" autoPlay loop muted style={{ opacity: bgVid === v ? 1 : 0 }}><source src={`${BASE_URL}${v}`} type="video/mp4" /></video>
-              ))}
+              {/* 效能優化點：單一影片渲染，節省手機記憶體 */}
+              <video key={bgVidSrc} className="bg-video" autoPlay loop muted playsInline>
+                <source src={`${BASE_URL}${bgVidSrc}`} type="video/mp4" />
+              </video>
 
               {step === 1 && (
                 <div className="top-nav" onClick={e => e.stopPropagation()}>
@@ -352,9 +265,7 @@
 
               {(step === 1 || step === 2) && playerCount && (
                 <div className="role-display">
-                  {ROLE_POOL_MAP[playerCount].map(r => (
-                    <img key={r} src={`${BASE_URL}${r}.png`} className="role-icon" />
-                  ))}
+                  {ROLE_POOL_MAP[playerCount].map(r => ( <img key={r} src={`${BASE_URL}${r}.png`} className="role-icon" /> ))}
                 </div>
               )}
 
@@ -365,21 +276,11 @@
               </div>
 
               {playerCount && PLAYER_POSITIONS[playerCount].map((pos, i) => {
-                const p = players[i];
-                if (!p) return null;
+                const p = players[i]; if (!p) return null;
                 const xx = String(p.id).padStart(2, '0');
-                let img = `idx_${xx}.png`;
-                if (p.status === 'revealed') img = `${p.role}.png`;
-                if (p.status === 'returned') img = `${p.role}_D.png`;
-                let glow = "";
+                let img = `idx_${xx}.png`; if (p.status === 'revealed') img = `${p.role}.png`; if (p.status === 'returned') img = `${p.role}_D.png`;
+                let glow = p.isGlow ? "glow-red" : (step === 3 && p.side === 'moon' ? "glow-blue" : (step === 4 && p.role === 'zeus' ? "glow-gold" : (step === 4 && p.role === 'hades' ? "glow-blue" : (step === 4 && p.role === 'prophet' ? "glow-teal" : ""))));
                 if (inspectingId === p.id) glow = "glow-inspect"; 
-                else if (p.isGlow) glow = "glow-red";
-                else if (step === 3 && p.side === 'moon') glow = "glow-blue";
-                else if (step === 4) {
-                   if (p.role === 'zeus') glow = "glow-gold";
-                   else if (p.role === 'hades') glow = "glow-blue";
-                   else if (p.role === 'prophet') glow = "glow-teal";
-                }
                 return (
                   <div key={p.id} className={`coord-slot ${glow}`} style={{ left: `${pos.left}%`, top: `${pos.top}%` }} onClick={(e) => onCoordClick(e, p)}>
                     <div className="card-wrap">
@@ -390,47 +291,24 @@
                 );
               })}
 
-              {(step === 7 || step === 8) && (
-                  <div className="info-status-bar">
-                      第 {round} 輪任務 | 太陽目標：{sunTarget} | 達成率：{progress}%
-                  </div>
-              )}
-
-              {(step === 7 || step === 8 || step >= 13) && (
-                <div style={{pointerEvents:'none'}}>
-                  <div className="counter-box sun-counter">日: {sunScore}</div>
-                  <div className="counter-box moon-counter">月: {moonScore}</div>
-                </div>
-              )}
+              {(step === 7 || step === 8) && ( <div className="info-status-bar"> 第 {round} 輪任務 | 太陽目標：{sunTarget} | 達成率：{progress}% </div> )}
+              {(step === 7 || step === 8 || step >= 13) && ( <div style={{pointerEvents:'none'}}> <div className="counter-box sun-counter">日: {sunScore}</div> <div className="counter-box moon-counter">月: {moonScore}</div> </div> )}
 
               {step === 7 && (
                 <div className="mission-area" onClick={e => e.stopPropagation()}>
                   <div className="mission-cards-row">
                       {tempCards.map((c, idx) => {
                         const isStarPool = (round === 1 && idx >= tempCards.length - 2) || (round === 2 && idx >= tempCards.length - 1);
-                        return (
-                          <img key={idx} src={`${BASE_URL}card_${c}.png`} className={`mission-card ${isStarPool ? 'star-pool-glow' : ''}`} onClick={() => {
-                            const next = [...tempCards];
-                            next[idx] = (next[idx] + 1) % 4;
-                            setTempCards(next);
-                          }} />
-                        );
+                        return ( <img key={idx} src={`${BASE_URL}card_${c}.png`} className={`mission-card ${isStarPool ? 'star-pool-glow' : ''}`} onClick={() => { const next = [...tempCards]; next[idx] = (next[idx] + 1) % 4; setTempCards(next); }} /> );
                       })}
                   </div>
                   {(round === 1 || round === 2) && <div className="mission-legend">紫金邊框：星池公牌 (非出征人數)</div>}
                 </div>
               )}
 
-              {inspectTarget && (
-                  <img 
-                    src={`${BASE_URL}${inspectTarget.isInfected ? 'card_2.png' : (['zeus','hades','prophet'].includes(inspectTarget.role) ? 'card_0.png' : (inspectTarget.side === 'moon' ? 'card_2.png' : 'card_1.png'))}`} 
-                    className="check-card-overlay" 
-                  />
-              )}
+              {inspectTarget && ( <img src={`${BASE_URL}${inspectTarget.isInfected ? 'card_2.png' : (['zeus','hades','prophet'].includes(inspectTarget.role) ? 'card_0.png' : (inspectTarget.side === 'moon' ? 'card_2.png' : 'card_1.png'))}`} className="check-card-overlay" /> )}
 
-              <div className="reset-area">
-                  <button className="btn-reset-main" onClick={(e) => { e.stopPropagation(); setShowReset(true); }}>重新開始</button>
-              </div>
+              <div className="reset-area"> <button className="btn-reset-main" onClick={(e) => { e.stopPropagation(); setShowReset(true); }}>重新開始</button> </div>
 
               {showReset && (
                   <div className="modal-overlay" onClick={() => setShowReset(false)}>
@@ -444,40 +322,12 @@
               {activePlayer && (
                 <div className="modal-overlay" onClick={() => setActiveMenuId(null)}>
                   <div className="pop-menu" onClick={e => e.stopPropagation()}>
-                    <div style={{color:'#fff', textAlign:'center', marginBottom:'10px', fontWeight:'bold'}}>玩家 #{activePlayer.id} 設置</div>
-                    {step === 3 && (
-                      <>
-                        <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, side:'sun'}:p)); setActiveMenuId(null); }}>設置 日方</button>
-                        <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, side:'moon'}:p)); setActiveMenuId(null); }}>設置 月方</button>
-                      </>
-                    )}
-                    {step === 4 && (
-                      <>
-                        {getFilteredRoles().includes('hades') && <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'hades'}:p)); setActiveMenuId(null); }}>黑帝斯 (月)</button>}
-                        {getFilteredRoles().includes('zeus') && <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'zeus'}:p)); setActiveMenuId(null); }}>宙斯 (日)</button>}
-                        {getFilteredRoles().includes('prophet') && <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'prophet'}:p)); setActiveMenuId(null); }}>先知 (日)</button>}
-                        <button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:null}:p)); setActiveMenuId(null); }}>取消身分</button>
-                      </>
-                    )}
-                    {(step === 8 || step === 13) && (
-                      <>
-                        {getFilteredRoles().map(r => (
-                          <div key={r} style={{display:'flex', gap:'5px'}}>
-                            <button className="pop-btn" style={{flex:1, fontSize:'12px'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:r, status:'returned'}:p)); setActiveMenuId(null); }}>{r}(歸)</button>
-                            <button className="pop-btn" style={{flex:1, fontSize:'12px'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:r, status:'revealed'}:p)); setActiveMenuId(null); }}>{r}(現)</button>
-                          </div>
-                        ))}
-                        <button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:null, status:'idx'}:p)); setActiveMenuId(null); }}>清空</button>
-                      </>
-                    )}
+                    <div style={{color:'#fff', textAlign:'center', marginBottom:'1.5vmin', fontWeight:'bold', fontSize:'2.2vmin'}}>玩家 #{activePlayer.id} 設置</div>
+                    {step === 3 && ( <> <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, side:'sun'}:p)); setActiveMenuId(null); }}>設置 日方</button> <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, side:'moon'}:p)); setActiveMenuId(null); }}>設置 月方</button> </> )}
+                    {step === 4 && ( <> {getFilteredRoles().includes('hades') && <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'hades'}:p)); setActiveMenuId(null); }}>黑帝斯 (月)</button>} {getFilteredRoles().includes('zeus') && <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'zeus'}:p)); setActiveMenuId(null); }}>宙斯 (日)</button>} {getFilteredRoles().includes('prophet') && <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'prophet'}:p)); setActiveMenuId(null); }}>先知 (日)</button>} <button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:null}:p)); setActiveMenuId(null); }}>取消身分</button> </> )}
+                    {(step === 8 || step === 13) && ( <> {getFilteredRoles().map(r => ( <div key={r} style={{display:'flex', gap:'1vmin'}}> <button className="pop-btn" style={{flex:1}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:r, status:'returned'}:p)); setActiveMenuId(null); }}>{r}(歸)</button> <button className="pop-btn" style={{flex:1}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:r, status:'revealed'}:p)); setActiveMenuId(null); }}>{r}(現)</button> </div> ))} <button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:null, status:'idx'}:p)); setActiveMenuId(null); }}>清空</button> </> )}
                     {step === 10 && <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, isGlow:!p.isGlow}:p)); setActiveMenuId(null); }}>擊殺/取消</button>}
-                    {step === 11 && (
-                      <>
-                        <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'pandora'}:p)); setActiveMenuId(null); }}>潘朵拉 (月)</button>
-                        <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, isInfected:true}:p)); setActiveMenuId(null); }}>設置 眷屬</button>
-                        <button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, isInfected:false}:p)); setActiveMenuId(null); }}>取消</button>
-                      </>
-                    )}
+                    {step === 11 && ( <> <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'pandora'}:p)); setActiveMenuId(null); }}>潘朵拉 (月)</button> <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, isInfected:true}:p)); setActiveMenuId(null); }}>設置 眷屬</button> <button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, isInfected:false}:p)); setActiveMenuId(null); }}>取消</button> </> )}
                     <button className="pop-btn" style={{background:'#555'}} onClick={() => setActiveMenuId(null)}>關閉</button>
                   </div>
                 </div>
@@ -485,7 +335,6 @@
             </div>
           );
         }
-
         const root = ReactDOM.createRoot(document.getElementById("root"));
         root.render(<StarsApp />);
     </script>
