@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>群星失序 GM助手 v0.96</title>
+    <title>群星失序 GM助手 v0.97</title>
     
-    <!-- 強制全螢幕設置 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- 核心 React 資源 -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
@@ -84,15 +82,15 @@
         .mission-card { width: 72px; cursor: pointer; object-fit: contain; }
         .star-pool-glow { box-shadow: 0 0 15px 5px #d4af37, 0 0 20px 8px #8e44ad !important; border-radius: 5px; }
 
-        .pop-menu { position: absolute; background: #111; border: 2px solid #fff; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 40px #000; min-width: 180px; z-index: 9999; max-height: 80vh; overflow-y: auto; }
-        .pop-btn { background: #333; color: #fff; border: 1px solid #666; padding: 12px 15px; cursor: pointer; font-size: 16px; border-radius: 8px; text-align: center; border: none; }
+        .pop-menu { position: absolute; background: #111; border: 2px solid #fff; padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 0 40px #000; min-width: 180px; z-index: 9999; max-height: 80vh; overflow-y: auto; }
+        .pop-btn { background: #333; color: #fff; border: 1px solid #666; padding: 10px 15px; cursor: pointer; font-size: 15px; border-radius: 8px; text-align: center; border: none; }
         .pop-btn:hover:not(:disabled) { background: #fff; color: #000; }
         .pop-btn:disabled { opacity: 0.15; cursor: not-allowed; }
 
         @keyframes breathingCard { 0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.95); } }
         .check-card-overlay { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); width: 105px; z-index: 3000; pointer-events: none; animation: breathingCard 2.5s infinite ease-in-out; }
 
-        .info-status-bar { position: absolute; bottom: 95px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 15px; font-size: 18px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); text-shadow: 0 0 10px #000; white-space: nowrap; }
+        .info-status-bar { position: absolute; bottom: 95px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 15px; font-size: 18px; font-weight: bold; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); text-shadow: 0 0 10px #000; white-space: nowrap; }
         .reset-area { position: absolute; bottom: 15px; right: 15px; z-index: 5000; pointer-events: auto; }
         .btn-reset-main { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid #aaa; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; backdrop-filter: blur(5px); }
     </style>
@@ -111,6 +109,14 @@
 
         const BASE_URL = "https://raw.githubusercontent.com/n0man-board/stars-out-of-order-assets/main/images/";
 
+        // 統一角色對照表：卡珊德拉 = 先知
+        const ROLE_NAMES = {
+            zeus: "宙斯", hades: "哈迪斯", apollo: "阿波羅", hecate: "赫卡忒",
+            athena: "雅典娜", prometheus: "普羅米修斯", charon: "卡戎",
+            cerberus: "刻耳柏洛斯", pandora: "潘朵拉", cassandra: "卡珊德拉",
+            odysseus: "奧德修斯", daedalus: "代達羅斯", melampus: "梅蘭波斯"
+        };
+
         const PLAYER_POSITIONS = {
           "13": [{left:21.4,top:77.9},{left:10.3,top:70.0},{left:5.7,top:60.2},{left:8.2,top:50.2},{left:17.7,top:41.6},{left:32.4,top:35.8},{left:50.0,top:33.8},{left:67.6,top:35.8},{left:82.3,top:41.6},{left:91.8,top:50.2},{left:94.3,top:60.2},{left:89.7,top:70.0},{left:78.6,top:77.9}],
           "12": [{left:21.4,top:77.9},{left:13.6,top:73.1},{left:6.6,top:53.6},{left:15.4,top:43.0},{left:29.1,top:36.7},{left:42.3,top:34.1},{left:57.7,top:34.1},{left:72.2,top:36.7},{left:84.6,top:43.0},{left:93.4,top:53.6},{left:90.3,top:69.3},{left:78.6,top:77.9}],
@@ -125,10 +131,13 @@
 
         const MOON_TARGETS = { "5":2, "6":2, "7":3, "8":3, "9":4, "10":4, "11":4, "12":5, "13":5 };
         const SUN_GOALS = { "5":9, "6":11, "7":12, "8":14, "9":15, "10":17, "11":18, "12":20, "13":21 };
+        
+        // 陣營歸類
         const FACTIONS = {
           sun_gods: ["zeus", "apollo", "athena", "prometheus"],
-          mortals: ["odysseus", "daedalus", "melampus", "cassandra", "prometheus", "prophet"]
+          mortals: ["odysseus", "daedalus", "melampus", "cassandra", "prometheus"]
         };
+
         const ROLE_POOL_MAP = {
           "5": ["zeus", "hades", "pandora", "cassandra", "odysseus"],
           "6": ["zeus", "hades", "apollo", "hecate", "cassandra", "odysseus"],
@@ -140,18 +149,11 @@
           "12": ["zeus", "hades", "apollo", "hecate", "prometheus", "charon", "cerberus", "pandora", "cassandra", "odysseus", "daedalus", "melampus"],
           "13": ["zeus", "hades", "apollo", "hecate", "prometheus", "athena", "charon", "cerberus", "pandora", "cassandra", "odysseus", "daedalus", "melampus"]
         };
+
         const MISSION_MAP = {
           "5": [2, 2, 3, 3, 4, 4], "6": [2, 3, 3, 4, 4, 5], "7": [3, 3, 4, 4, 5, 5],
           "8": [3, 4, 4, 5, 5, 6], "9": [4, 4, 5, 5, 6, 6], "10": [4, 5, 5, 6, 6, 7],
           "11": [5, 5, 6, 6, 7, 7], "12": [5, 6, 6, 7, 7, 8], "13": [6, 6, 7, 7, 8, 8]
-        };
-
-        const ROLE_NAMES = {
-            zeus: "宙斯", hades: "哈迪斯", apollo: "阿波羅", hecate: "赫卡忒",
-            athena: "雅典娜", prometheus: "普羅米修斯", charon: "卡戎",
-            cerberus: "刻耳柏洛斯", pandora: "潘朵拉", cassandra: "卡珊德拉",
-            odysseus: "奧德修斯", daedalus: "代達羅斯", melampus: "梅蘭波斯",
-            prophet: "先知"
         };
 
         function StarsApp() {
@@ -199,6 +201,22 @@
             return m.some(v => sunScore >= v && lastSunScore < v);
           }, [sunScore, lastSunScore]);
 
+          const checkVictoryResult = () => {
+            if (!playerCount) return "CONTINUE";
+            const fullPool = ROLE_POOL_MAP[playerCount];
+            const deadRoleNames = players.filter(p => p.status === 'returned').map(p => p.role);
+            const confirmedRevealed = players.map(p => p.role).filter(r => r !== null);
+            const hiddenPool = fullPool.filter(r => !confirmedRevealed.includes(r));
+            const aliveRoles = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hiddenPool];
+
+            const isSunGodsExtinct = !aliveRoles.some(r => FACTIONS.sun_gods.includes(r));
+            const isMortalsExtinct = !aliveRoles.some(r => FACTIONS.mortals.includes(r));
+
+            if (isSunGodsExtinct || isMortalsExtinct) return "MOON_WIN";
+            if (sunScore >= SUN_GOALS[playerCount]) return "SUN_WIN";
+            return "CONTINUE";
+          };
+
           const validation = useMemo(() => {
             if (!playerCount) return { ok: true };
             if (step === 3) {
@@ -207,8 +225,8 @@
               return { ok: moons === target, hint: "需設置 " + target + " 位月方 (目前 " + moons + ")" };
             }
             if (step === 4) {
-              const hasZ = players.some(p=>p.role==='zeus'), hasH = players.some(p=>p.role==='hades'), hasP = players.some(p=>p.role==='prophet');
-              if (!hasZ || !hasH || !hasP) return { ok: false, hint: "需完成關鍵身分設置" };
+              const hasZ = players.some(p=>p.role==='zeus'), hasH = players.some(p=>p.role==='hades'), hasC = players.some(p=>p.role==='cassandra');
+              if (!hasZ || !hasH || !hasC) return { ok: false, hint: "需完成宙斯、黑帝斯與卡珊德拉設置" };
             }
             return { ok: true };
           }, [step, players, playerCount]);
@@ -234,13 +252,9 @@
               setSunScore(v => v + s); setMoonScore(v => v + m);
             }
             if (step === 13) {
-              const pool = ROLE_POOL_MAP[playerCount];
-              const deadNames = players.filter(p => p.status === 'returned').map(p => p.role);
-              const revealed = players.map(p => p.role).filter(r => r !== null);
-              const hidden = pool.filter(r => !revealed.includes(r));
-              const alive = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hidden];
-              if (!alive.some(r => FACTIONS.sun_gods.includes(r)) || !alive.some(r => FACTIONS.mortals.includes(r))) setStep(15);
-              else if (sunScore >= SUN_GOALS[playerCount]) setStep(14);
+              const res = checkVictoryResult();
+              if (res === "MOON_WIN") setStep(15);
+              else if (res === "SUN_WIN") setStep(14);
               else { setRound(r => r + 1); setPlayers(prev => prev.map(p => ({ ...p, isGlow: false }))); setStep(7); }
             } else if (step < 14) { setStep(s => s + 1); }
             setActiveMenuId(null);
@@ -253,36 +267,38 @@
             setActiveMenuId(p.id);
           };
 
-          const missionCount = useMemo(() => {
+          const missionCardsCount = useMemo(() => {
             if (!playerCount) return 0;
-            const base = MISSION_MAP[playerCount][round-1] || MISSION_MAP[playerCount][MISSION_MAP[playerCount].length-1];
+            const base = MISSION_MAP[playerCount][round - 1] || MISSION_MAP[playerCount][MISSION_MAP[playerCount].length-1];
             if (round === 1) return base + 2;
             if (round === 2) return base + 1;
             return base;
           }, [playerCount, round]);
 
-          useEffect(() => { if (step === 7 && playerCount) setTempCards(new Array(missionCount).fill(0)); }, [step, round, playerCount, missionCount]);
+          useEffect(() => { if (step === 7 && playerCount) setTempCards(new Array(missionCardsCount).fill(0)); }, [step, round, playerCount, missionCardsCount]);
 
           const activeP = useMemo(() => players.find(p => p.id === activeMenuId), [activeMenuId, players]);
+          
           const getFilteredRoles = () => {
             if (!playerCount) return [];
-            const used = players.filter(p => p.id !== activeMenuId && p.role !== null).map(p => p.role);
-            const core = ["zeus", "hades", "prophet"];
+            const usedRoles = players.filter(p => p.id !== activeMenuId && p.role !== null).map(p => p.role);
+            const core = ["zeus", "hades", "cassandra"];
             const pool = ROLE_POOL_MAP[playerCount];
             let final = [...new Set([...core, ...pool])];
             if (step === 4 && activeP) {
               if (activeP.side === 'moon') final = ["hades"];
-              else final = ["zeus", "prophet"];
+              else final = ["zeus", "cassandra"];
             }
-            return final.filter(role => !used.includes(role));
+            return final.filter(role => !usedRoles.includes(role));
           };
 
           return (
             <div className="landscape-app" onClick={() => { setActiveMenuId(null); setInspectingId(null); }}>
+              <style>{styles}</style>
               {["bg_video1.mp4", "bg_video2.mp4", "bg_video3.mp4", "bg_video4.mp4", "bg_video5.mp4", "bg_video6.mp4"].map((v, i) => (
                 <video key={v} ref={videoRefs["v" + (i+1)]} className="bg-video" loop muted playsInline><source src={BASE_URL + v} type="video/mp4" /></video>
               ))}
-              <div className="version-tag">v0.96</div>
+              <div className="version-tag">v0.97</div>
 
               {step === 1 && (
                 <div className="top-nav" onClick={e => e.stopPropagation()}>
@@ -309,7 +325,7 @@
                 const p = players[i]; if (!p) return null;
                 const xx = String(p.id).padStart(2, '0');
                 let img = p.status === 'returned' ? (p.role + "_D.png") : (p.status === 'revealed' ? (p.role + ".png") : ("idx_" + xx + ".png"));
-                let glow = p.id === inspectingId ? "glow-inspect" : (p.isGlow ? "glow-red" : (step === 3 && p.side === 'moon' ? "glow-blue" : (step === 4 && p.role === 'zeus' ? "glow-gold" : (step === 4 && p.role === 'hades' ? "glow-blue" : (step === 4 && p.role === 'prophet' ? "glow-teal" : "")))));
+                let glow = p.id === inspectingId ? "glow-inspect" : (p.isGlow ? "glow-red" : (step === 3 && p.side === 'moon' ? "glow-blue" : (step === 4 && p.role === 'zeus' ? "glow-gold" : (step === 4 && p.role === 'hades' ? "glow-blue" : (step === 4 && p.role === 'cassandra' ? "glow-teal" : "")))));
                 return (
                   <div key={p.id} className={"coord-slot " + glow} style={{ left: pos.left + "%", top: pos.top + "%" }} onClick={(e) => onCoordClick(e, p)}>
                     <div className="card-wrap"><img src={BASE_URL + img} width="100%" height="100%" style={{objectFit:'contain'}}/><img src={BASE_URL + "s" + xx + ".png"} style={{position:'absolute',inset:0,width:'100%',objectFit:'contain'}}/></div>
@@ -331,8 +347,8 @@
                 </div>
               )}
 
-              {inspectingId && players.find(p=>p.id===inspectingId) && ( 
-                <img src={BASE_URL + (players.find(p=>p.id===inspectingId).isInfected ? 'card_2.png' : (['zeus','hades','prophet'].includes(players.find(p=>p.id===inspectingId).role) ? 'card_0.png' : (players.find(p=>p.id===inspectingId).side === 'moon' ? 'card_2.png' : 'card_1.png')))} className="check-card-overlay" /> 
+              {inspectingId && activeP && ( 
+                <img src={BASE_URL + (activeP.isInfected ? 'card_2.png' : (['zeus','hades','cassandra'].includes(activeP.role) ? 'card_0.png' : (activeP.side === 'moon' ? 'card_2.png' : 'card_1.png')))} className="check-card-overlay" /> 
               )}
 
               <div className="reset-area"> <button className="btn-reset-main" onClick={(e) => { e.stopPropagation(); setShowReset(true); }}>重新開始</button> </div>
