@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>群星失序 GM助手 v0.97</title>
+    <title>群星失序 GM助手 v0.98</title>
     
+    <!-- 全螢幕 Web App 設置 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="data:application/json,{'display':'standalone','orientation':'landscape'}">
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -18,7 +20,7 @@
             margin: 0; padding: 0; width: 100%; height: 100%; 
             background: #000; overflow: hidden; 
             display: flex; justify-content: center; align-items: center;
-            font-family: "Microsoft JhengHei", sans-serif;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
         }
 
         .landscape-app {
@@ -81,6 +83,7 @@
         .mission-cards-row { display: flex; gap: 10px; }
         .mission-card { width: 72px; cursor: pointer; object-fit: contain; }
         .star-pool-glow { box-shadow: 0 0 15px 5px #d4af37, 0 0 20px 8px #8e44ad !important; border-radius: 5px; }
+        .mission-legend { color: #d4af37; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 2px 10px; border-radius: 10px; border: 1px solid #8e44ad; }
 
         .pop-menu { position: absolute; background: #111; border: 2px solid #fff; padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 0 40px #000; min-width: 180px; z-index: 9999; max-height: 80vh; overflow-y: auto; }
         .pop-btn { background: #333; color: #fff; border: 1px solid #666; padding: 10px 15px; cursor: pointer; font-size: 15px; border-radius: 8px; text-align: center; border: none; }
@@ -99,7 +102,7 @@
 
     <div class="portrait-warning">
         <h2>💫 星軌導航</h2>
-        <p>請將手機橫放並鎖定旋轉<br>以啟動 GM 輔助系統</p>
+        <p>請將手機橫放並鎖定旋轉<br>以啟動 GM 輔助儀式</p>
     </div>
 
     <div id="root"></div>
@@ -109,9 +112,9 @@
 
         const BASE_URL = "https://raw.githubusercontent.com/n0man-board/stars-out-of-order-assets/main/images/";
 
-        // 統一角色對照表：卡珊德拉 = 先知
+        // 繁體中文對照
         const ROLE_NAMES = {
-            zeus: "宙斯", hades: "哈迪斯", apollo: "阿波羅", hecate: "赫卡忒",
+            zeus: "宙斯", hades: "黑帝斯", apollo: "阿波羅", hecate: "赫卡忒",
             athena: "雅典娜", prometheus: "普羅米修斯", charon: "卡戎",
             cerberus: "刻耳柏洛斯", pandora: "潘朵拉", cassandra: "卡珊德拉",
             odysseus: "奧德修斯", daedalus: "代達羅斯", melampus: "梅蘭波斯"
@@ -131,13 +134,10 @@
 
         const MOON_TARGETS = { "5":2, "6":2, "7":3, "8":3, "9":4, "10":4, "11":4, "12":5, "13":5 };
         const SUN_GOALS = { "5":9, "6":11, "7":12, "8":14, "9":15, "10":17, "11":18, "12":20, "13":21 };
-        
-        // 陣營歸類
         const FACTIONS = {
           sun_gods: ["zeus", "apollo", "athena", "prometheus"],
           mortals: ["odysseus", "daedalus", "melampus", "cassandra", "prometheus"]
         };
-
         const ROLE_POOL_MAP = {
           "5": ["zeus", "hades", "pandora", "cassandra", "odysseus"],
           "6": ["zeus", "hades", "apollo", "hecate", "cassandra", "odysseus"],
@@ -149,7 +149,6 @@
           "12": ["zeus", "hades", "apollo", "hecate", "prometheus", "charon", "cerberus", "pandora", "cassandra", "odysseus", "daedalus", "melampus"],
           "13": ["zeus", "hades", "apollo", "hecate", "prometheus", "athena", "charon", "cerberus", "pandora", "cassandra", "odysseus", "daedalus", "melampus"]
         };
-
         const MISSION_MAP = {
           "5": [2, 2, 3, 3, 4, 4], "6": [2, 3, 3, 4, 4, 5], "7": [3, 3, 4, 4, 5, 5],
           "8": [3, 4, 4, 5, 5, 6], "9": [4, 4, 5, 5, 6, 6], "10": [4, 5, 5, 6, 6, 7],
@@ -194,28 +193,15 @@
           const initGame = (n) => {
             setPlayerCount(n);
             setPlayers(Array.from({ length: n }, (_, i) => ({ id: i + 1, side: 'sun', role: null, isInfected: false, isGlow: false, status: 'idx' })));
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
           };
 
           const hitMilestone = useMemo(() => {
             const m = [3, 5, 8, 11, 14, 17, 20];
             return m.some(v => sunScore >= v && lastSunScore < v);
           }, [sunScore, lastSunScore]);
-
-          const checkVictoryResult = () => {
-            if (!playerCount) return "CONTINUE";
-            const fullPool = ROLE_POOL_MAP[playerCount];
-            const deadRoleNames = players.filter(p => p.status === 'returned').map(p => p.role);
-            const confirmedRevealed = players.map(p => p.role).filter(r => r !== null);
-            const hiddenPool = fullPool.filter(r => !confirmedRevealed.includes(r));
-            const aliveRoles = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hiddenPool];
-
-            const isSunGodsExtinct = !aliveRoles.some(r => FACTIONS.sun_gods.includes(r));
-            const isMortalsExtinct = !aliveRoles.some(r => FACTIONS.mortals.includes(r));
-
-            if (isSunGodsExtinct || isMortalsExtinct) return "MOON_WIN";
-            if (sunScore >= SUN_GOALS[playerCount]) return "SUN_WIN";
-            return "CONTINUE";
-          };
 
           const validation = useMemo(() => {
             if (!playerCount) return { ok: true };
@@ -252,9 +238,15 @@
               setSunScore(v => v + s); setMoonScore(v => v + m);
             }
             if (step === 13) {
-              const res = checkVictoryResult();
-              if (res === "MOON_WIN") setStep(15);
-              else if (res === "SUN_WIN") setStep(14);
+              const pool = ROLE_POOL_MAP[playerCount];
+              const deadNames = players.filter(p => p.status === 'returned').map(p => p.role);
+              const confirmedRevealed = players.map(p => p.role).filter(r => r !== null);
+              const hiddenPool = pool.filter(r => !confirmedRevealed.includes(r));
+              const alive = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hiddenPool];
+              const isGodsExtinct = !alive.some(r => FACTIONS.sun_gods.includes(r));
+              const isMortalsExtinct = !alive.some(r => FACTIONS.mortals.includes(r));
+              if (isGodsExtinct || isMortalsExtinct) setStep(15);
+              else if (sunScore >= SUN_GOALS[playerCount]) setStep(14);
               else { setRound(r => r + 1); setPlayers(prev => prev.map(p => ({ ...p, isGlow: false }))); setStep(7); }
             } else if (step < 14) { setStep(s => s + 1); }
             setActiveMenuId(null);
@@ -298,7 +290,8 @@
               {["bg_video1.mp4", "bg_video2.mp4", "bg_video3.mp4", "bg_video4.mp4", "bg_video5.mp4", "bg_video6.mp4"].map((v, i) => (
                 <video key={v} ref={videoRefs["v" + (i+1)]} className="bg-video" loop muted playsInline><source src={BASE_URL + v} type="video/mp4" /></video>
               ))}
-              <div className="version-tag">v0.97</div>
+              
+              <div className="version-tag">v0.98</div>
 
               {step === 1 && (
                 <div className="top-nav" onClick={e => e.stopPropagation()}>
@@ -344,6 +337,7 @@
                       return ( <img key={idx} src={BASE_URL + "card_" + c + ".png"} className={"mission-card " + (isPool ? 'star-pool-glow' : '')} onClick={() => { const next = [...tempCards]; next[idx] = (next[idx] + 1) % 4; setTempCards(next); }} /> );
                     })}
                   </div>
+                  {(round === 1 || round === 2) && <div className="mission-legend">紫金邊框：星池公牌 (非出征人數)</div>}
                 </div>
               )}
 
