@@ -6,63 +6,37 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="群星GMv1.2">
-    <title>群星GMv1.2</title>
+    <title>群星GMv1.7</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
     <style>
-        :root {
-            --app-width: 100vw;
-            --app-height: calc(100vw * 9 / 16);
-        }
-        @media (min-aspect-ratio: 16/9) {
-            :root {
-                --app-width: calc(100vh * 16 / 9);
-                --app-height: 100vh;
-            }
-        }
-
-        body { 
-            margin: 0; background: #000; font-family: sans-serif; 
-            overflow: hidden; display: flex; justify-content: center; align-items: center; 
-            height: 100vh; width: 100vw; touch-action: none; 
-        }
-
-        .landscape-app { 
-            position: relative; width: var(--app-width); height: var(--app-height);
-            background: #000; overflow: hidden; transform: translateZ(0);
-        }
-
-        .bg-video { 
-            position: absolute; inset: 0; width: 100%; height: 100%; 
-            object-fit: cover; z-index: 0; pointer-events: none;
-            transition: opacity 0.8s ease; opacity: 0;
-        }
+        :root { --app-width: 100vw; --app-height: calc(100vw * 9 / 16); }
+        @media (min-aspect-ratio: 16/9) { :root { --app-width: calc(100vh * 16 / 9); --app-height: 100vh; } }
+        body { margin: 0; background: #000; font-family: sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; touch-action: none; }
+        .landscape-app { position: relative; width: var(--app-width); height: var(--app-height); background: #000; overflow: hidden; transform: translateZ(0); }
+        .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; transition: opacity 0.8s ease; opacity: 0; }
         .bg-video.active { opacity: 1; }
-
-        .loading-screen {
-            position: fixed; inset: 0; background: #000; color: #fff;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20000;
-        }
+        .loading-screen { position: fixed; inset: 0; background: #000; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20000; }
         .progress-bar { width: 180px; height: 3px; background: #222; margin-top: 15px; border-radius: 2px; overflow: hidden; }
         .progress-fill { height: 100%; background: #f1c40f; transition: width 0.4s; }
-        .fs-btn { padding: 15px 45px; font-size: 20px; background: #f1c40f; border: none; border-radius: 12px; color: #000; font-weight: bold; cursor: pointer; box-shadow: 0 0 20px rgba(241,196,15,0.4); }
+        .fs-btn { padding: 15px 45px; font-size: 20px; background: #f1c40f; border: none; border-radius: 12px; color: #000; font-weight: bold; cursor: pointer; }
 
-        /* 遊戲 UI 樣式繼承 */
+        /* 樣式與你提供的代碼完全對應 */
         .top-nav { position: absolute; top: 2.5%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; z-index: 5000; background: rgba(0,0,0,0.7); padding: 5px 15px; border-radius: 30px; border: 1px solid #fff; }
-        .nav-label { color: #fff; font-weight: bold; font-size: 13px; }
-        .btn-circle { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #fff; background: none; color: #fff; font-weight: bold; }
+        .nav-label { color: #fff; font-weight: bold; font-size: 13px; white-space: nowrap; }
+        .btn-circle { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #fff; background: none; color: #fff; font-weight: bold; cursor: pointer; }
         .btn-circle.active { background: #fff; color: #000; }
-        .role-display { position: absolute; top: 13%; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 400; width: 90%; justify-content: center; }
+        .role-display { position: absolute; top: 13%; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 400; }
         .role-icon { width: 45px; height: 45px; object-fit: contain; border: 1px solid #fff; border-radius: 6px; }
         @keyframes breathingUI { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         .center-btn-box { position: absolute; left: 50%; transform: translate(-50%, -50%); width: 40%; z-index: 100; pointer-events: none; display: flex; flex-direction: column; align-items: center; animation: breathingUI 3s infinite ease-in-out; }
         .center-img { width: 100%; height: auto; }
-        .center-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%; z-index: 110; pointer-events: auto; }
-        .lock-hint { color: #ff4d4d; font-weight: bold; font-size: 13px; text-shadow: 0 0 10px #000; margin-top: 5px; background: rgba(0,0,0,0.6); padding: 2px 10px; border-radius: 10px; }
-        .coord-slot { position: absolute; width: 5.12%; aspect-ratio: 1/1.4; transform: translate(-50%, -50%); z-index: 1000; }
+        .center-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%; z-index: 110; pointer-events: auto; cursor: pointer; }
+        .lock-hint { color: #ff4d4d; font-weight: bold; font-size: 13px; text-shadow: 0 0 10px #000; margin-top: 5px; background: rgba(0,0,0,0.6); padding: 2px 10px; border-radius: 10px; text-align: center; }
+        .coord-slot { position: absolute; width: 5.12%; aspect-ratio: 1/1.4; transform: translate(-50%, -50%); z-index: 1000; cursor: pointer; }
         .glow-red { box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.8) !important; }
         .glow-blue { box-shadow: 0 0 15px 5px rgba(0, 100, 255, 0.8) !important; }
         .glow-gold { box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8) !important; }
@@ -73,11 +47,11 @@
         .moon-counter { right: 4%; color: #9b59b6; }
         .mission-area { position: absolute; top: 2%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 800; }
         .mission-cards-row { display: flex; gap: 5px; }
-        .mission-card { width: 55px; }
-        .star-pool-glow { box-shadow: 0 0 10px 3px #d4af37, 0 0 12px 5px #8e44ad !important; border-radius: 4px; }
+        .mission-card { width: 55px; cursor: pointer; }
         .pop-menu { position: absolute; background: #111; border: 2px solid #fff; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 0 40px #000; min-width: 160px; z-index: 9999; max-height: 85%; overflow-y: auto; }
-        .pop-btn { background: #333; color: #fff; border: 1px solid #666; padding: 12px 5px; font-size: 14px; border-radius: 8px; text-align: center; }
-        .info-status-bar { position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 4px 15px; border-radius: 15px; font-size: 15px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); white-space: nowrap; }
+        .pop-btn { background: #333; color: #fff; border: 1px solid #666; padding: 10px 5px; font-size: 14px; border-radius: 8px; text-align: center; cursor: pointer; }
+        .pop-btn:disabled { opacity: 0.15; cursor: not-allowed; }
+        .info-status-bar { position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 4px 15px; border-radius: 15px; font-size: 15px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); white-space: nowrap; pointer-events: none; }
         .version-tag { position: absolute; bottom: 5px; left: 10px; color: rgba(255,255,255,0.3); font-size: 10px; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9000; display: flex; justify-content: center; align-items: center; }
         .check-card-overlay { position: absolute; top: 18%; left: 50%; transform: translate(-50%, -50%); width: 85px; z-index: 3000; animation: breathingCard 2.5s infinite ease-in-out; }
@@ -113,13 +87,10 @@
 
             const vRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
             const getActiveVidIndex = () => {
-                if (step <= 2) return 0;
-                if (step >= 3 && step <= 6) return 1;
+                if (step <= 2) return 0; if (step >= 3 && step <= 6) return 1;
                 if (step === 7 || step === 8 || step === 12 || step === 13) return 2;
-                if (step >= 9 && step <= 11) return 3;
-                if (step === 14) return 4;
-                if (step === 15) return 5;
-                return 0;
+                if (step >= 9 && step <= 11) return 3; if (step === 14) return 4;
+                if (step === 15) return 5; return 0;
             };
 
             useEffect(() => {
@@ -150,8 +121,7 @@
                 const fullPool = ROLE_POOL_MAP[playerCount];
                 const aliveRoles = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...fullPool.filter(r => !players.map(p=>p.role).includes(r))];
                 if (!aliveRoles.some(r => FACTIONS.sun_gods.includes(r)) || !aliveRoles.some(r => FACTIONS.mortals.includes(r))) return "MOON_WIN";
-                if (sunScore >= sunTarget) return "SUN_WIN";
-                return "CONTINUE";
+                if (sunScore >= sunTarget) return "SUN_WIN"; return "CONTINUE";
             };
 
             const validation = useMemo(() => {
@@ -165,7 +135,7 @@
                     const hasZeus = players.some(p => p.role === 'zeus');
                     const hasHades = players.some(p => p.role === 'hades');
                     const hasProphet = players.some(p => p.role === 'prophet');
-                    if (!hasZeus || !hasHades || !hasProphet) return { ok: false, hint: "需設置宙斯、黑帝斯與先知" };
+                    if (!hasZeus || !hasHades || !hasProphet) return { ok: false, hint: "需完成宙斯、黑帝斯與先知設置" };
                 }
                 return { ok: true };
             }, [step, players, playerCount]);
@@ -173,22 +143,18 @@
             const centerImgName = useMemo(() => {
                 if (step === 1) return playerCount ? "set_1.png" : "star.png";
                 if (step === 8) return hitMilestone ? "set_7_2.png" : "set_7_1.png";
-                if (step === 12) return "set_4.png"; 
-                if (step === 13) return "set_11.png";
-                if (step === 14) return "set_12.png"; 
-                if (step === 15) return "set_13.png"; 
+                if (step === 12) return "set_4.png"; if (step === 13) return "set_11.png";
+                if (step === 14) return "set_12.png"; if (step === 15) return "set_13.png"; 
                 return `set_${step - 1}.png`;
             }, [step, playerCount, hitMilestone]);
 
             const onCenterClick = () => {
-                if (step === 1 && !playerCount) return;
-                if (!validation.ok) return;
+                if (step === 1 && !playerCount) return; if (!validation.ok) return;
                 setInspectingId(null);
                 if (step === 1) { setStep(3); return; }
                 if (step === 7) {
                     setLastSunScore(sunScore); 
-                    let s = 0, m = 0;
-                    tempCards.forEach(c => { if(c === 1) s++; if(c === 2) m++; });
+                    let s = 0, m = 0; tempCards.forEach(c => { if(c === 1) s++; if(c === 2) m++; });
                     setSunScore(v => v + s); setMoonScore(v => v + m);
                 }
                 if (step === 13) {
@@ -210,23 +176,21 @@
             const missionCardsCount = useMemo(() => {
                 if (!playerCount) return 0;
                 const base = MISSION_MAP[playerCount][round - 1] || MISSION_MAP[playerCount][MISSION_MAP[playerCount].length-1];
-                if (round === 1) return base + 2;
-                if (round === 2) return base + 1;
-                return base;
+                if (round === 1) return base + 2; if (round === 2) return base + 1; return base;
             }, [playerCount, round]);
 
-            useEffect(() => {
-                if (step === 7 && playerCount) setTempCards(new Array(missionCardsCount).fill(0));
-            }, [step, round, playerCount, missionCardsCount]);
+            useEffect(() => { if (step === 7 && playerCount) setTempCards(new Array(missionCardsCount).fill(0)); }, [step, round, playerCount, missionCardsCount]);
 
             const activePlayer = useMemo(() => players.find(p => p.id === activeMenuId), [activeMenuId, players]);
             const inspectTarget = useMemo(() => players.find(p => p.id === inspectingId), [inspectingId, players]);
 
+            // --- 恢復原始過濾邏輯 ---
             const getFilteredRoles = () => {
                 if (!playerCount) return [];
                 const usedRoles = players.filter(p => p.id !== activeMenuId && p.role !== null).map(p => p.role);
+                const core = ["zeus", "hades", "prophet"];
                 const pool = ROLE_POOL_MAP[playerCount];
-                let finalPool = [...new Set(["zeus", "hades", "prophet", ...pool])];
+                let finalPool = [...new Set([...core, ...pool])];
                 if (step === 4 && activePlayer) {
                     if (activePlayer.side === 'moon') finalPool = ["hades"];
                     else finalPool = ["zeus", "prophet"];
@@ -237,10 +201,8 @@
             return (
                 <div className="landscape-app" onClick={() => { setActiveMenuId(null); setInspectingId(null); }}>
                     <div className="version-tag">群星GMv1.2</div>
-                    
                     {[1,2,3,4,5,6].map((n, i) => (
-                        <video key={n} ref={vRefs[i]} className="bg-video" loop muted playsInline 
-                               preload={(n <= 4) ? "auto" : "none"}>
+                        <video key={n} ref={vRefs[i]} className="bg-video" loop muted playsInline preload={(n <= 4) ? "auto" : "none"}>
                             <source src={`${BASE_URL}bg_video${n}.mp4`} type="video/mp4" />
                         </video>
                     ))}
@@ -274,7 +236,7 @@
                             </div>
                         );
                     })}
-                    {(step === 7 || step === 8) && ( <div className="info-status-bar"> 第 {round} 輪 | 目標：{sunTarget} | 達成率：{progress}% </div> )}
+                    {(step === 7 || step === 8) && ( <div className="info-status-bar"> 第 {round} 輪任務 | 目標：{sunTarget} | 達成率：{progress}% </div> )}
                     {(step === 7 || step === 8 || step >= 13) && ( <> <div className="counter-box sun-counter">日: {sunScore}</div> <div className="counter-box moon-counter">月: {moonScore}</div> </> )}
                     {step === 7 && (
                         <div className="mission-area" onClick={e => e.stopPropagation()}>
@@ -293,11 +255,11 @@
                         <div className="modal-overlay" onClick={() => setActiveMenuId(null)}>
                             <div className="pop-menu" onClick={e => e.stopPropagation()}>
                                 <div style={{color:'#fff', textAlign:'center', marginBottom:'5px', fontSize:'12px'}}>玩家 #{activePlayer.id} 設置</div>
-                                {step === 3 && ( <><button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, side:'sun'}:p)); setActiveMenuId(null); }}>日方</button><button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, side:'moon'}:p)); setActiveMenuId(null); }}>月方</button></> )}
+                                {step === 3 && ( <><button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, side:'sun'}:p)); setActiveMenuId(null); }}>設置 日方</button><button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, side:'moon'}:p)); setActiveMenuId(null); }}>設置 月方</button></> )}
                                 {step === 4 && ( <><button className="pop-btn" disabled={!getFilteredRoles().includes('hades')} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'hades'}:p)); setActiveMenuId(null); }}>黑帝斯</button><button className="pop-btn" disabled={!getFilteredRoles().includes('zeus')} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'zeus'}:p)); setActiveMenuId(null); }}>宙斯</button><button className="pop-btn" disabled={!getFilteredRoles().includes('prophet')} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'prophet'}:p)); setActiveMenuId(null); }}>先知</button></> )}
-                                {(step === 8 || step === 13) && ( <><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'5px'}}>{getFilteredRoles().map(r => ( <button key={r} className="pop-btn" style={{fontSize:'12px'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:r, status:'revealed'}:p)); setActiveMenuId(null); }}>{r}</button> )) }</div></> )}
+                                {(step === 8 || step === 13) && ( <><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'5px'}}>{getFilteredRoles().map(r => ( <React.Fragment key={r}><button className="pop-btn" style={{fontSize:'12px'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:r, status:'returned'}:p)); setActiveMenuId(null); }}>{r}(歸)</button><button className="pop-btn" style={{fontSize:'12px'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:r, status:'revealed'}:p)); setActiveMenuId(null); }}>{r}(現)</button></React.Fragment> )) }</div><button className="pop-btn" style={{background:'#c0392b'}} onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:null, status:'idx'}:p)); setActiveMenuId(null); }}>清空</button></> )}
                                 {step === 10 && <button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, isGlow:!p.isGlow}:p)); setActiveMenuId(null); }}>擊殺/取消</button>}
-                                {step === 11 && ( <><button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'pandora'}:p)); setActiveMenuId(null); }}>潘朵拉</button><button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, isInfected:true}:p)); setActiveMenuId(null); }}>眷屬</button></> )}
+                                {step === 11 && ( <><button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, role:'pandora'}:p)); setActiveMenuId(null); }}>潘朵拉</button><button className="pop-btn" onClick={() => { setPlayers(prev => prev.map(p => p.id === activePlayer.id ? {...p, isInfected:true}:p)); setActiveMenuId(null); }}>設置 眷屬</button></> )}
                                 <button className="pop-btn" style={{background:'#444'}} onClick={() => setActiveMenuId(null)}>關閉</button>
                             </div>
                         </div>
@@ -307,58 +269,33 @@
         }
 
         function AssetLoader() {
-            const [isReady, setIsReady] = useState(false);
-            const [progress, setProgress] = useState(0);
-            const [isStarted, setIsStarted] = useState(false);
-
+            const [isReady, setIsReady] = useState(false); const [progress, setProgress] = useState(0); const [isStarted, setIsStarted] = useState(false);
             useEffect(() => {
-                // 必要資產：啟動按鈕、座標底圖、前兩步背景
                 const critical = ["star", "set_1", "set_2", "idx_01","idx_02","idx_03","idx_04","idx_05","idx_06","idx_07","idx_08","idx_09","idx_10","idx_11","idx_12","idx_13","s01","s02","s03","s04","s05","s06","s07","s08","s09","s10","s11","s12","s13"];
-                const total = critical.length;
-                let loaded = 0;
-
-                // 強制 6 秒後不論結果如何直接解鎖按鈕
+                const total = critical.length; let loaded = 0;
                 const forceTimer = setTimeout(() => { setIsReady(true); setProgress(100); }, 6000);
-
                 critical.forEach(name => {
-                    const img = new Image();
-                    img.src = `${BASE_URL}${name}.png`;
-                    img.onload = () => {
-                        loaded++;
-                        setProgress(Math.floor((loaded / total) * 100));
-                        if(loaded >= total) { clearTimeout(forceTimer); setIsReady(true); }
-                    };
-                    img.onerror = () => { // 就算出錯也計算在內，避免卡住
-                        loaded++;
-                        if(loaded >= total) setIsReady(true);
-                    };
+                    const img = new Image(); img.src = `${BASE_URL}${name}.png`;
+                    img.onload = () => { loaded++; setProgress(Math.floor((loaded/total)*100)); if(loaded>=total){ clearTimeout(forceTimer); setIsReady(true); } };
+                    img.onerror = () => { loaded++; if(loaded>=total) setIsReady(true); };
                 });
-
                 return () => clearTimeout(forceTimer);
             }, []);
-
             const handleStart = () => {
                 const doc = document.documentElement;
-                if (doc.requestFullscreen) doc.requestFullscreen().catch(()=>{});
-                else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen().catch(()=>{});
+                if (doc.requestFullscreen) doc.requestFullscreen().catch(()=>{}); else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen().catch(()=>{});
                 setIsStarted(true);
             };
-
             return !isStarted ? (
                 <div className="loading-screen">
                     <h2 style={{margin:0, color:'#f1c40f', letterSpacing:'2px'}}>群星GMv1.2</h2>
                     {!isReady ? (
-                        <>
-                            <div className="progress-bar"><div className="progress-fill" style={{width: `${progress}%`}}></div></div>
-                            <p style={{fontSize:'12px', color:'#555', marginTop:'10px'}}>正在初始化星域...</p>
-                        </>
-                    ) : (
-                        <button className="fs-btn" style={{marginTop:'30px'}} onClick={handleStart}>啟動系統</button>
-                    )}
+                        <> <div className="progress-bar"><div className="progress-fill" style={{width: `${progress}%`}}></div></div>
+                           <p style={{fontSize:'12px', color:'#555', marginTop:'10px'}}>正在初始化星域...</p> </>
+                    ) : ( <button className="fs-btn" style={{marginTop:'30px'}} onClick={handleStart}>啟動系統</button> )}
                 </div>
             ) : <StarsApp />;
         }
-
         ReactDOM.createRoot(document.getElementById("root")).render(<AssetLoader />);
     </script>
 </body>
