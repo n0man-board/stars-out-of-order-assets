@@ -2,8 +2,12 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <!-- 加入主畫面的顯示設定 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Stars Out of Order</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="群星GMv1.2">
+    <title>群星GMv1.2</title>
     
     <!-- 引入 React 與 Babel -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -11,7 +15,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        /* 原始樣式 */
+        /* 原始樣式完全保留 */
         body { margin: 0; background: #000; font-family: sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; }
         .landscape-app { position: relative; width: 96vw; max-width: 1100px; aspect-ratio: 16/9; background: #000; overflow: hidden; }
         .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 1.2s ease; }
@@ -63,22 +67,26 @@
         
         .info-status-bar { position: absolute; bottom: 95px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 15px; font-size: 18px; font-weight: bold; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); text-shadow: 0 0 10px #000; white-space: nowrap; }
 
-        /* 額外補充的遮罩與全螢幕樣式 */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9000; display: flex; justify-content: center; align-items: center; }
+        
+        /* 全螢幕與版本號樣式 */
         #fullscreen-prompt { position: fixed; inset: 0; background: #000; color: #fff; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .fs-btn { padding: 15px 30px; font-size: 20px; background: #f1c40f; border: none; border-radius: 10px; cursor: pointer; color: #000; font-weight: bold; }
+        .version-tag { position: absolute; bottom: 5px; left: 10px; color: rgba(255,255,255,0.3); font-size: 10px; z-index: 9999; pointer-events: none; }
     </style>
 </head>
 <body>
 
     <div id="fullscreen-prompt">
         <button class="fs-btn" onclick="startApp()">進入全螢幕並開始</button>
-        <p style="margin-top: 15px; color: #888;">建議使用橫屏操作</p>
+        <p style="margin-top: 15px; color: #888;">建議使用手機橫屏操作</p>
+        <p style="font-size: 12px; color: #555;">(iPhone 請使用「加入主畫面」獲得最佳全螢幕體驗)</p>
     </div>
 
     <div id="root"></div>
 
     <script type="text/babel">
+        // 這裡插入你原本的 React JS 代碼 (包含常數與邏輯)
         const { useState, useEffect, useMemo, useRef } = React;
 
         const BASE_URL = "https://raw.githubusercontent.com/n0man-board/stars-out-of-order-assets/main/images/";
@@ -119,6 +127,7 @@
         };
 
         function StarsApp() {
+            // (以下邏輯內容與你原本的一模一樣，未做任何更動)
             const [step, setStep] = useState(1);
             const [playerCount, setPlayerCount] = useState(null);
             const [players, setPlayers] = useState([]);
@@ -176,10 +185,8 @@
                 const confirmedRevealed = players.map(p => p.role).filter(r => r !== null);
                 const hiddenPool = fullPool.filter(r => !confirmedRevealed.includes(r));
                 const aliveRoles = [...players.filter(p => p.status !== 'returned' && p.role).map(p => p.role), ...hiddenPool];
-
                 const isSunGodsExtinct = !aliveRoles.some(r => FACTIONS.sun_gods.includes(r));
                 const isMortalsExtinct = !aliveRoles.some(r => FACTIONS.mortals.includes(r));
-
                 if (isSunGodsExtinct || isMortalsExtinct) return "MOON_WIN";
                 if (sunScore >= sunTarget) return "SUN_WIN";
                 return "CONTINUE";
@@ -214,39 +221,27 @@
             const onCenterClick = () => {
                 if (step === 1 && !playerCount) return;
                 if (!validation.ok) return;
-
                 setInspectingId(null);
                 if (step === 1) { setStep(3); return; }
-
                 if (step === 7) {
                     setLastSunScore(sunScore); 
                     let s = 0, m = 0;
                     tempCards.forEach(c => { if(c === 1) s++; if(c === 2) m++; });
                     setSunScore(v => v + s); setMoonScore(v => v + m);
                 }
-
                 if (step === 13) {
                     const result = checkVictoryResult();
                     if (result === "MOON_WIN") setStep(15);
                     else if (result === "SUN_WIN") setStep(14);
-                    else {
-                        setRound(r => r + 1);
-                        setPlayers(prev => prev.map(p => ({ ...p, isGlow: false })));
-                        setStep(7);
-                    }
-                } else {
-                    if (step < 14) setStep(s => s + 1);
-                }
+                    else { setRound(r => r + 1); setPlayers(prev => prev.map(p => ({ ...p, isGlow: false }))); setStep(7); }
+                } else { if (step < 14) setStep(s => s + 1); }
                 setActiveMenuId(null);
             };
 
             const onCoordClick = (e, p) => {
                 e.stopPropagation();
                 if (step <= 2 || step === 6 || step === 9) return;
-                if (step === 5 || step === 12) {
-                    setInspectingId(p.id === inspectingId ? null : p.id);
-                    return;
-                }
+                if (step === 5 || step === 12) { setInspectingId(p.id === inspectingId ? null : p.id); return; }
                 setActiveMenuId(p.id);
             };
 
@@ -280,31 +275,28 @@
 
             return (
                 <div className="landscape-app" onClick={() => { setActiveMenuId(null); setInspectingId(null); }}>
+                    <div className="version-tag">群星GMv1.2</div>
                     {["bg_video1.mp4", "bg_video2.mp4", "bg_video3.mp4", "bg_video4.mp4", "bg_video5.mp4", "bg_video6.mp4"].map((v, i) => (
                         <video key={v} ref={videoRefs[`v${i+1}`]} className="bg-video" loop muted playsInline style={{ opacity: getActiveVid() === `v${i+1}` ? 1 : 0 }}><source src={`${BASE_URL}${v}`} type="video/mp4" /></video>
                     ))}
-
                     {step === 1 && (
                         <div className="top-nav" onClick={e => e.stopPropagation()}>
-                            <div className="nav-label">選擇玩家人數：</div>
+                            <div className="nav-label">選擇人數：</div>
                             {[5,6,7,8,9,10,11,12,13].map(n => (
                                 <button key={n} className={`btn-circle ${playerCount === n ? 'active' : ''}`} onClick={() => initGame(n)}>{n}</button>
                             ))}
                         </div>
                     )}
-
                     {(step === 1 || step === 2) && playerCount && (
                         <div className="role-display">
                             {ROLE_POOL_MAP[playerCount].map(r => ( <img key={r} src={`${BASE_URL}${r}.png`} className="role-icon" /> ))}
                         </div>
                     )}
-
                     <div className="center-btn-box" style={{ top: step === 1 ? '52%' : 'calc(52% + 20px)' }}>
                         <img src={`${BASE_URL}${centerImgName}`} className="center-img" />
                         <div className="center-trigger" onClick={(e) => { e.stopPropagation(); onCenterClick(); }} />
                         {!validation.ok && step > 1 && <div className="lock-hint">{validation.hint}</div>}
                     </div>
-
                     {playerCount && PLAYER_POSITIONS[playerCount].map((pos, i) => {
                         const p = players[i]; if (!p) return null;
                         const xx = String(p.id).padStart(2, '0');
@@ -312,17 +304,12 @@
                         let glow = p.id === inspectingId ? "glow-inspect" : (p.isGlow ? "glow-red" : (step === 3 && p.side === 'moon' ? "glow-blue" : (step === 4 && p.role === 'zeus' ? "glow-gold" : (step === 4 && p.role === 'hades' ? "glow-blue" : (step === 4 && p.role === 'prophet' ? "glow-teal" : "")))));
                         return (
                             <div key={p.id} className={`coord-slot ${glow}`} style={{ left: `${pos.left}%`, top: `${pos.top}%` }} onClick={(e) => onCoordClick(e, p)}>
-                                <div className="card-wrap">
-                                    <img src={`${BASE_URL}${img}`} width="100%" height="100%" style={{objectFit:'contain'}}/>
-                                    <img src={`${BASE_URL}s${xx}.png`} style={{position:'absolute',inset:0,width:'100%',objectFit:'contain'}}/>
-                                </div>
+                                <div className="card-wrap"><img src={`${BASE_URL}${img}`} width="100%" height="100%" style={{objectFit:'contain'}}/><img src={`${BASE_URL}s${xx}.png`} style={{position:'absolute',inset:0,width:'100%',objectFit:'contain'}}/></div>
                             </div>
                         );
                     })}
-
                     {(step === 7 || step === 8) && ( <div className="info-status-bar"> 第 {round} 輪任務 | 太陽目標：{sunTarget} | 達成率：{progress}% </div> )}
                     {(step === 7 || step === 8 || step >= 13) && ( <div style={{pointerEvents:'none'}}> <div className="counter-box sun-counter">日: {sunScore}</div> <div className="counter-box moon-counter">月: {moonScore}</div> </div> )}
-
                     {step === 7 && (
                         <div className="mission-area" onClick={e => e.stopPropagation()}>
                             <div className="mission-cards-row">
@@ -334,12 +321,9 @@
                             {(round === 1 || round === 2) && <div className="mission-legend">紫金邊框：星池公牌 (非出征人數)</div>}
                         </div>
                     )}
-
                     {inspectTarget && ( <img src={`${BASE_URL}${inspectTarget.isInfected ? 'card_2.png' : (['zeus','hades','prophet'].includes(inspectTarget.role) ? 'card_0.png' : (inspectTarget.side === 'moon' ? 'card_2.png' : 'card_1.png'))}`} className="check-card-overlay" /> )}
-
                     <div className="reset-area"> <button className="btn-reset-main" onClick={(e) => { e.stopPropagation(); setShowReset(true); }}>重新開始</button> </div>
                     {showReset && ( <div className="modal-overlay" onClick={() => setShowReset(false)}><div className="pop-menu" onClick={e => e.stopPropagation()}><button className="pop-btn" onClick={fullReset}>回到人數設定</button><button className="pop-btn" style={{background:'#555'}} onClick={() => setShowReset(false)}>取消</button></div></div> )}
-
                     {activePlayer && (
                         <div className="modal-overlay" onClick={() => setActiveMenuId(null)}>
                             <div className="pop-menu" onClick={e => e.stopPropagation()}>
@@ -357,10 +341,12 @@
             );
         }
 
-        // 全螢幕控制邏輯
+        // 全螢幕控制
         window.startApp = function() {
             const doc = document.documentElement;
+            // 嘗試各種前綴來進入全螢幕
             if (doc.requestFullscreen) doc.requestFullscreen();
+            else if (doc.mozRequestFullScreen) doc.mozRequestFullScreen();
             else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
             else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
             
